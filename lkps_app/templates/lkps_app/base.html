@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LKPS Automasi - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'lkps_app/css/style.css' %}">
+</head>
+<body>
+
+<div class="wrapper">
+    <aside class="sidebar">
+        
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fas fa-layer-group me-2" style="color: var(--accent-color);"></i>
+                Sistem <span>LKPS</span>
+            </div>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="sidebar-item mb-2">
+                <a href="{% url 'dashboard' %}" class="sidebar-link">
+                    <i class="fas fa-home"></i> Dashboard Utama
+                </a>
+            </li>
+            
+
+            <li class="sidebar-item mb-2">
+                <a href="{% url 'sampul' %}" class="sidebar-link">
+                    <i class="fas fa-file-signature"></i> Identitas Pengusul
+                </a>
+            </li>
+            
+            <li class="sidebar-item mb-2">
+                <a href="{% url 'tim_penyusun' %}" class="sidebar-link">
+                    <i class="fas fa-users-cog"></i> Tim Penyusun LKPS
+                </a>
+            </li>
+
+            <li class="sidebar-item mb-2">
+                <a href="#kriteria13" data-bs-toggle="collapse" class="sidebar-link d-flex justify-content-between align-items-center" aria-expanded="false">
+                    <div><i class="fas fa-users"></i> Kriteria 1 - 3</div>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <ul class="collapse sidebar-submenu" id="kriteria13">
+                    <li class="sidebar-item"><a href="{% url 'tabel_1' %}" class="sidebar-link">Tabel 1: Kerjasama</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_2a' %}" class="sidebar-link">Tabel 2.A: Seleksi Mahasiswa</a></li>
+                    
+                    <li class="sidebar-item"><a href="{% url 'tabel_3a' %}" class="sidebar-link">Tabel 3.A: Dosen Tetap</a></li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item mb-2">
+                <a href="#kriteria46" data-bs-toggle="collapse" class="sidebar-link d-flex justify-content-between align-items-center" aria-expanded="false">
+                    <div><i class="fas fa-laptop-code"></i> Kriteria 4 - 6</div>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <ul class="collapse sidebar-submenu" id="kriteria46">
+                    <li class="sidebar-item"><a href="{% url 'tabel_4' %}" class="sidebar-link">Tabel 4: Penggunaan Dana</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_5_1' %}" class="sidebar-link">Tabel 5.1: Sistem Tata Kelola</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_5_2' %}" class="sidebar-link">Tabel 5.2: Sarana & Prasarana</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_6' %}" class="sidebar-link">Tabel 6: Kurikulum</a></li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item mb-2">
+                <a href="#kriteria79" data-bs-toggle="collapse" class="sidebar-link d-flex justify-content-between align-items-center" aria-expanded="false">
+                    <div><i class="fas fa-flask"></i> Kriteria 7 - 9</div>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+                <ul class="collapse sidebar-submenu" id="kriteria79">
+                    <li class="sidebar-item"><a href="{% url 'tabel_7' %}" class="sidebar-link">Tabel 7: Penelitian</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_8' %}" class="sidebar-link">Tabel 8: Pengabdian (PkM)</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_9' %}" class="sidebar-link">Tabel 9: Luaran & Publikasi</a></li>
+                </ul>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="main-content">
+        <header class="topbar">
+            <div>
+                <h5 class="mb-0 text-dark fw-bold">Pengisian Dokumen LKPS</h5>
+                <small class="text-muted">Universitas Pradita</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle border-0 shadow-sm" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle text-primary me-2"></i> User Program Studi
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Pengaturan</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-wrapper">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'lkps_app/js/autosave.js' %}"></script>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+    <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-message">
+                <i class="fas fa-check-circle me-2"></i> Data berhasil disimpan otomatis.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<div id="loading-overlay" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex flex-column justify-content-center align-items-center" style="z-index: 9999;">
+    <div class="spinner-border text-warning" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <h4 class="text-white mt-3 fw-bold">Sedang Mengompilasi Dokumen...</h4>
+    <p class="text-white-50">Mohon tunggu, proses konversi ke Word sedang berjalan.</p>
+</div>
+
+</body>
+</html>
