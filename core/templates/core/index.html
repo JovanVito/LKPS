@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automasi LKPS LAM INFOKOM</title>
+    <style>
+        body { font-family: Arial; text-align: center; margin-top: 50px; background-color: #f4f4f4; }
+        .card { background: white; padding: 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .btn { background-color: #007bff; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Sistem Automasi Dokumen LKPS</h1>
+        <p>Klik tombol di bawah untuk meng-generate dokumen Word sesuai format LAM INFOKOM April 2025.</p>
+        <br><br>
+        <a href="{% url 'export_word' %}" class="btn">DOWNLOAD LAPORAN (.DOCX)</a>
+    </div>
+</body>
+</html>
