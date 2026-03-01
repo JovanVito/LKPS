@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.urls import path, include # Pastikan 'include' sudah di-import
+from django.urls import path, include # Pastikan 'include' diimpor
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')), # Ini adalah 'jembatan' ke aplikasi core kamu
+    # Ini adalah 'jembatan' yang benar ke rute aplikasi core kamu
+    path('', include('core.urls')), 
 ]

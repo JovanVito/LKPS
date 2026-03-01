@@ -1,0 +1,180 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <form id="form-tata-kelola" method="POST">
+            {% csrf_token %}
+            <div class="card card-modern">
+                <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">Tabel 5.1: Sistem Tata Kelola</h3>
+                        <small class="text-muted">Isi daftar sistem informasi yang digunakan di UPPS/Program Studi.</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" id="btn-tambah-baris">
+                        <i class="fas fa-plus me-1"></i> Tambah Baris
+                    </button>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="tabel-tata-kelola">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%" class="text-center">No</th>
+                                    <th width="20%">Jenis Tata Kelola</th>
+                                    <th width="25%">Nama Sistem Informasi</th>
+                                    <th width="15%">Akses</th>
+                                    <th width="20%">Unit Pengelola</th>
+                                    <th width="10%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-tata-kelola">
+                                {% if data %}
+                                    {% for item in data %}
+                                    <tr>
+                                        <td class="text-center baris-nomor">{{ forloop.counter }}</td>
+                                        <td>
+                                            <select class="form-select form-select-sm auto-save-input" name="jenis_tata_kelola[]">
+                                                <option value="Pendidikan" {% if item.jenis_tata_kelola == "Pendidikan" %}selected{% endif %}>Pendidikan</option>
+                                                <option value="Keuangan" {% if item.jenis_tata_kelola == "Keuangan" %}selected{% endif %}>Keuangan</option>
+                                                <option value="SDM" {% if item.jenis_tata_kelola == "SDM" %}selected{% endif %}>SDM</option>
+                                                <option value="Sarana Prasarana" {% if item.jenis_tata_kelola == "Sarana Prasarana" %}selected{% endif %}>Sarana Prasarana</option>
+                                                <option value="Lainnya" {% if item.jenis_tata_kelola == "Lainnya" %}selected{% endif %}>Lainnya...</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_sistem[]" value="{{ item.nama_sistem }}"></td>
+                                        <td>
+                                            <select class="form-select form-select-sm auto-save-input" name="akses[]">
+                                                <option value="Internet" {% if item.akses == "Internet" %}selected{% endif %}>Internet</option>
+                                                <option value="Lokal" {% if item.akses == "Lokal" %}selected{% endif %}>Lokal</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="unit_pengelola[]" value="{{ item.unit_pengelola }}"></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td class="text-center baris-nomor">1</td>
+                                        <td>
+                                            <select class="form-select form-select-sm auto-save-input" name="jenis_tata_kelola[]">
+                                                <option value="Pendidikan">Pendidikan</option>
+                                                <option value="Keuangan">Keuangan</option>
+                                                <option value="SDM">SDM</option>
+                                                <option value="Sarana Prasarana">Sarana Prasarana</option>
+                                                <option value="Lainnya">Lainnya...</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_sistem[]" placeholder="Contoh: SIAKAD"></td>
+                                        <td>
+                                            <select class="form-select form-select-sm auto-save-input" name="akses[]">
+                                                <option value="Internet">Internet</option>
+                                                <option value="Lokal">Lokal</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="unit_pengelola[]" placeholder="Biro / Unit"></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" disabled>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white text-end py-3">
+                     <span class="save-status me-3" id="table-save-status">
+                         <i class="fas fa-check-circle"></i> Semua data tersimpan
+                     </span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('tbody-tata-kelola');
+        const btnTambah = document.getElementById('btn-tambah-baris');
+        const form = document.getElementById('form-tata-kelola');
+        const saveStatus = document.getElementById('table-save-status');
+        let autosaveTimeout;
+
+        function updateNomor() {
+            const baris = tbody.querySelectorAll('tr');
+            baris.forEach((tr, index) => {
+                tr.querySelector('.baris-nomor').textContent = index + 1;
+                const btnHapus = tr.querySelector('.btn-hapus-baris');
+                if (baris.length > 1) {
+                    btnHapus.removeAttribute('disabled');
+                } else {
+                    btnHapus.setAttribute('disabled', 'true');
+                }
+            });
+        }
+
+        // Fungsi untuk mengirim data ke server
+        function triggerAutosave() {
+            saveStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            
+            clearTimeout(autosaveTimeout);
+            autosaveTimeout = setTimeout(() => {
+                const formData = new FormData(form);
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        saveStatus.innerHTML = '<i class="fas fa-check-circle text-success"></i> Semua data tersimpan';
+                    }
+                })
+                .catch(err => {
+                    saveStatus.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i> Gagal menyimpan';
+                    console.error('Error:', err);
+                });
+            }, 1000); // Menunggu 1 detik setelah input berhenti
+        }
+
+        // Listener untuk semua perubahan input dalam form
+        form.addEventListener('input', triggerAutosave);
+        form.addEventListener('change', triggerAutosave);
+
+        btnTambah.addEventListener('click', function() {
+            const barisPertama = tbody.querySelector('tr');
+            const barisBaru = barisPertama.cloneNode(true);
+            
+            barisBaru.querySelectorAll('input').forEach(input => input.value = '');
+            barisBaru.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+
+            tbody.appendChild(barisBaru);
+            updateNomor();
+            triggerAutosave();
+        });
+
+        tbody.addEventListener('click', function(e) {
+            const btnHapus = e.target.closest('.btn-hapus-baris');
+            if (btnHapus && !btnHapus.hasAttribute('disabled')) {
+                const tr = btnHapus.closest('tr');
+                tr.remove();
+                updateNomor();
+                triggerAutosave();
+            }
+        });
+
+        // Inisialisasi awal
+        updateNomor();
+    });
+</script>
+{% endblock %}

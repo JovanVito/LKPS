@@ -1,0 +1,133 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<form id="form-tabel-3a" method="POST">
+    {% csrf_token %}
+    <div class="card shadow-sm border-top-primary">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white">
+            <h5 class="mb-0 fw-bold text-primary">Tabel 3.A: Dosen Tetap Perguruan Tinggi</h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success" id="btn-import-excel">
+                    <i class="fas fa-file-excel me-1"></i> Import Excel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btn-tambah-dosen">
+                    <i class="fas fa-plus me-1"></i> Tambah Dosen
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 70vh;">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th rowspan="2">No</th>
+                            <th rowspan="2">Nama Dosen</th>
+                            <th rowspan="2">NIDN / NIDK</th>
+                            <th colspan="2">Pendidikan Pasca Sarjana</th>
+                            <th rowspan="2">Bidang Keahlian</th>
+                            <th rowspan="2">Jabatan</th>
+                            <th rowspan="2">Sertifikat</th>
+                            <th rowspan="2">Mata Kuliah Diampu</th>
+                            <th rowspan="2" width="5%">Aksi</th>
+                        </tr>
+                        <tr>
+                            <th>Magister</th>
+                            <th>Doktor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-3a">
+                        {% for item in data %}
+                        <tr>
+                            <td class="baris-nomor">{{ forloop.counter }}</td>
+                            <td><input type="text" name="nama_dosen[]" value="{{ item.nama_dosen }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="nidk[]" value="{{ item.nidk }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="magister[]" value="{{ item.magister }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="doktor[]" value="{{ item.doktor }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="bidang_keahlian[]" value="{{ item.bidang_keahlian }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="jabatan_akademik[]" value="{{ item.jabatan_akademik }}" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="sertifikat_pendidik[]" value="{{ item.sertifikat_pendidik }}" class="form-control form-control-sm"></td>
+                            <td><textarea name="matkul_diampu[]" class="form-control form-control-sm" rows="1">{{ item.matkul_diampu }}</textarea></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td class="baris-nomor">1</td>
+                            <td><input type="text" name="nama_dosen[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="nidk[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="magister[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="doktor[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="bidang_keahlian[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="jabatan_akademik[]" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="sertifikat_pendidik[]" class="form-control form-control-sm"></td>
+                            <td><textarea name="matkul_diampu[]" class="form-control form-control-sm" rows="1"></textarea></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('tbody-3a');
+        const form = document.getElementById('form-tabel-3a');
+        let autosaveTimeout;
+
+        function triggerAutosave() {
+            clearTimeout(autosaveTimeout);
+            autosaveTimeout = setTimeout(() => {
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value 
+                    }
+                }).then(res => res.json()).then(data => console.log('Simpan:', data.status));
+            }, 800);
+        }
+
+        form.addEventListener('input', triggerAutosave);
+
+        // --- TOMBOL DELETE ---
+        tbody.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-hapus');
+            if (btn && tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove(); // Hapus di layar
+                updateNomor();
+                triggerAutosave(); // <--- Menghapus di PostgreSQL (Sinkronisasi layar)
+            }
+        });
+
+        document.getElementById('btn-tambah-dosen').addEventListener('click', () => {
+            const firstRow = tbody.querySelector('tr');
+            const newRow = firstRow.cloneNode(true);
+            newRow.querySelectorAll('input, textarea').forEach(i => i.value = '');
+            tbody.appendChild(newRow);
+            updateNomor();
+            triggerAutosave();
+        });
+
+        function updateNomor() {
+            tbody.querySelectorAll('tr').forEach((tr, index) => {
+                tr.querySelector('.baris-nomor').textContent = index + 1;
+            });
+        }
+
+        document.getElementById('btn-import-excel').addEventListener('click', () => {
+            let input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = e => {
+                let fd = new FormData();
+                fd.append('file_excel', e.target.files[0]);
+                fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                fetch('/import_excel_lkps/', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => res.json()).then(data => { alert(data.message); location.reload(); });
+            };
+            input.click();
+        });
+    });
+</script>
+{% endblock %}

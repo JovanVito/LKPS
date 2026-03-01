@@ -1,0 +1,88 @@
+{% extends 'lkps_app/base.html' %}
+
+{% load static %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">Daftar Program Studi</h2>
+        <p class="text-muted">Kelola data program studi yang akan mengisi dokumen LKPS.</p>
+    </div>
+    <button class="btn btn-primary shadow-sm" style="background-color: var(--pradita-blue); border: none;" data-bs-toggle="modal" data-bs-target="#modalTambahProdi">
+        <i class="fas fa-plus-circle me-2"></i>Tambah Prodi Baru
+    </button>
+</div>
+
+<div class="card card-modern border-top-blue">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%" class="py-3">No</th>
+                        <th width="35%" class="text-start py-3">Nama Program Studi</th>
+                        <th width="25%" class="py-3">Fakultas / UPPS</th>
+                        <th width="20%" class="py-3">Status Pengisian LKPS</th>
+                        <th width="15%" class="py-3">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold text-muted">1</td>
+                        <td class="text-start fw-semibold text-dark">S1 Informatika</td>
+                        <td>Fakultas Sains dan Teknologi</td>
+                        <td>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                <i class="fas fa-check-circle me-1"></i> Selesai
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-light text-primary me-1"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-muted">2</td>
+                        <td class="text-start fw-semibold text-dark">S1 Sistem Informasi</td>
+                        <td>Fakultas Sains dan Teknologi</td>
+                        <td>
+                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1">
+                                <i class="fas fa-clock me-1"></i> Proses (45%)
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-light text-primary me-1"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-light text-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTambahProdi" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold" style="color: var(--pradita-navy);">Tambah Program Studi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-4">
+                <form id="form-prodi">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Nama Program Studi</label>
+                        <input type="text" class="form-control" name="nama_prodi" placeholder="Contoh: S1 Teknik Sipil">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold text-uppercase">Fakultas / UPPS</label>
+                        <input type="text" class="form-control" name="fakultas" placeholder="Contoh: Fakultas Teknik">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top-0 pb-4 px-4">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" style="background-color: var(--pradita-orange); border: none;">Simpan Data</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

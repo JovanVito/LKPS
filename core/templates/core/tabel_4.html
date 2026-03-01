@@ -1,0 +1,134 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<form id="form-tabel-4" method="POST">
+    {% csrf_token %}
+    <div class="card shadow-sm border-top-primary">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white">
+            <h5 class="mb-0 fw-bold text-primary">Tabel 4: Penggunaan Dana</h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success" id="btn-import-4"><i class="fas fa-file-excel"></i> Import</button>
+                <button type="button" class="btn btn-sm btn-primary" id="btn-tambah-4"><i class="fas fa-plus"></i> Tambah</button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th rowspan="2" width="5%">No</th>
+                            <th rowspan="2" width="35%">Jenis Penggunaan</th>
+                            <th colspan="3">Unit Pengelola (Juta Rp)</th>
+                            <th rowspan="2">Rata-rata</th>
+                            <th rowspan="2">Aksi</th>
+                        </tr>
+                        <tr>
+                            <th>TS-2</th><th>TS-1</th><th>TS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-4">
+                        {% if data %}
+                            {% for item in data %}
+                            <tr class="baris-dana">
+                                <td class="no-urut">{{ forloop.counter }}</td>
+                                <td><input type="text" name="jenis_penggunaan[]" value="{{ item.jenis_penggunaan }}" class="form-control form-control-sm"></td>
+                                <td><input type="number" step="0.01" name="ts_2[]" value="{{ item.ts_2 }}" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="number" step="0.01" name="ts_1[]" value="{{ item.ts_1 }}" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="number" step="0.01" name="ts[]" value="{{ item.ts }}" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="text" class="form-control form-control-sm bg-light fw-bold t-rata" readonly value="{{ item.rata_rata }}"></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            {% for label in default_labels %}
+                            <tr class="baris-dana">
+                                <td class="no-urut">{{ forloop.counter }}</td>
+                                <td><input type="text" name="jenis_penggunaan[]" value="{{ label }}" class="form-control form-control-sm"></td>
+                                <td><input type="number" step="0.01" name="ts_2[]" value="0" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="number" step="0.01" name="ts_1[]" value="0" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="number" step="0.01" name="ts[]" value="0" class="form-control form-control-sm text-end in-dana"></td>
+                                <td><input type="text" class="form-control form-control-sm bg-light fw-bold t-rata" readonly value="0.00"></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="2">TOTAL</td>
+                            <td id="f-ts2">0</td><td id="f-ts1">0</td><td id="f-ts">0</td><td id="f-rata">0</td><td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('tbody-4');
+        const form = document.getElementById('form-tabel-4');
+        let timer;
+
+        function hitung() {
+            let s2=0, s1=0, s0=0;
+            document.querySelectorAll('.baris-dana').forEach(r => {
+                const v2 = parseFloat(r.querySelector('[name="ts_2[]"]').value) || 0;
+                const v1 = parseFloat(r.querySelector('[name="ts_1[]"]').value) || 0;
+                const v0 = parseFloat(r.querySelector('[name="ts[]"]').value) || 0;
+                r.querySelector('.t-rata').value = ((v2+v1+v0)/3).toFixed(2);
+                s2+=v2; s1+=v1; s0+=v0;
+            });
+            document.getElementById('f-ts2').textContent = s2.toFixed(2);
+            document.getElementById('f-ts1').textContent = s1.toFixed(2);
+            document.getElementById('f-ts').textContent = s0.toFixed(2);
+            document.getElementById('f-rata').textContent = ((s2+s1+s0)/3).toFixed(2);
+        }
+
+        function sync() {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+            }, 800);
+        }
+
+        form.addEventListener('input', () => { hitung(); sync(); });
+
+        document.getElementById('btn-tambah-4').addEventListener('click', () => {
+            const row = tbody.querySelector('tr').cloneNode(true);
+            row.querySelectorAll('input').forEach(i => i.value = i.name === 'jenis_penggunaan[]' ? '' : '0');
+            tbody.appendChild(row);
+            updateNo();
+        });
+
+        tbody.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-hapus');
+            if (btn && tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                updateNo(); hitung(); sync();
+            }
+        });
+
+        function updateNo() {
+            tbody.querySelectorAll('.no-urut').forEach((td, i) => td.textContent = i + 1);
+        }
+
+        document.getElementById('btn-import-4').addEventListener('click', () => {
+            let input = document.createElement('input'); input.type = 'file';
+            input.onchange = e => {
+                let fd = new FormData(); fd.append('file_excel', e.target.files[0]);
+                fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                fetch('/import_excel_lkps/', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(res => res.json()).then(data => { alert(data.message); location.reload(); });
+            };
+            input.click();
+        });
+
+        hitung();
+    });
+</script>
+{% endblock %}

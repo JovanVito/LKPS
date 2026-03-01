@@ -1,0 +1,151 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<form id="form-tabel-2a" method="POST">
+    {% csrf_token %}
+    <div class="card shadow-sm border-top-primary">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white">
+            <h5 class="mb-0 fw-bold">Tabel 2.a: Seleksi Mahasiswa Baru</h5>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success" id="btn-import-excel">
+                    <i class="fas fa-file-excel me-1"></i> Import Excel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btn-tambah-baris">
+                    <i class="fas fa-plus me-1"></i> Tambah Tahun
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0 text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th rowspan="2">Tahun Akademik</th>
+                            <th rowspan="2">Daya Tampung</th>
+                            <th colspan="2">Calon Mahasiswa</th>
+                            <th colspan="2">Maba</th>
+                            <th colspan="2">Mahasiswa Aktif</th>
+                            <th rowspan="2">Aksi</th>
+                        </tr>
+                        <tr>
+                            <th>Pendaftar</th>
+                            <th>Lulus</th>
+                            <th>Reguler</th>
+                            <th>Transfer</th>
+                            <th>Reguler</th>
+                            <th>Transfer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-2a">
+                        {% for item in data %}
+                        <tr>
+                            <td><input type="text" name="tahun_akademik[]" value="{{ item.tahun_akademik }}" class="form-control form-control-sm text-center"></td>
+                            <td><input type="number" name="daya_tampung[]" value="{{ item.daya_tampung }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="pendaftar[]" value="{{ item.pendaftar }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="lulus_seleksi[]" value="{{ item.lulus_seleksi }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_baru_reguler[]" value="{{ item.mhs_baru_reguler }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_baru_transfer[]" value="{{ item.mhs_baru_transfer }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_aktif_reguler[]" value="{{ item.mhs_aktif_reguler }}" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_aktif_transfer[]" value="{{ item.mhs_aktif_transfer }}" class="form-control form-control-sm"></td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td><input type="text" name="tahun_akademik[]" value="TS" class="form-control form-control-sm text-center"></td>
+                            <td><input type="number" name="daya_tampung[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="pendaftar[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="lulus_seleksi[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_baru_reguler[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_baru_transfer[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_aktif_reguler[]" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="mhs_aktif_transfer[]" class="form-control form-control-sm"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" disabled><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('tbody-2a');
+        const form = document.getElementById('form-tabel-2a');
+        let autosaveTimeout;
+
+        // --- 1. FUNGSI AUTOSAVE ---
+        function triggerAutosave() {
+            clearTimeout(autosaveTimeout);
+            autosaveTimeout = setTimeout(() => {
+                const formData = new FormData(form);
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => console.log('Autosave status:', data.status));
+            }, 800); // Autosave setelah 0.8 detik berhenti mengetik
+        }
+
+        form.addEventListener('input', triggerAutosave);
+
+        // --- 2. FUNGSI TAMBAH BARIS ---
+        document.getElementById('btn-tambah-baris').addEventListener('click', function() {
+            const rows = tbody.querySelectorAll('tr');
+            const lastRow = rows[rows.length - 1];
+            const newRow = lastRow.cloneNode(true);
+            
+            // Bersihkan isi input baru
+            newRow.querySelectorAll('input').forEach(input => {
+                if (input.name !== 'tahun_akademik[]') input.value = '';
+            });
+
+            tbody.appendChild(newRow);
+            triggerAutosave(); // Simpan baris kosong baru ke DB
+        });
+
+        // --- 3. FUNGSI HAPUS BARIS ---
+        tbody.addEventListener('click', function(e) {
+            const btnHapus = e.target.closest('.btn-hapus-baris');
+            if (btnHapus) {
+                if (tbody.querySelectorAll('tr').length > 1) {
+                    btnHapus.closest('tr').remove();
+                    triggerAutosave(); // Update DB setelah hapus
+                } else {
+                    alert('Minimal harus ada satu baris data.');
+                }
+            }
+        });
+
+        // --- 4. LOGIKA IMPORT EXCEL ---
+        document.getElementById('btn-import-excel').addEventListener('click', function() {
+            let input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            input.onchange = e => {
+                const formData = new FormData();
+                formData.append('file_excel', e.target.files[0]);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                fetch('/import_excel_lkps/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if(data.status === 'success') location.reload();
+                });
+            };
+            input.click();
+        });
+    });
+</script>
+{% endblock %}

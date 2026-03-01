@@ -1,0 +1,125 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<form id="form-tabel-1" method="POST">
+    {% csrf_token %}
+    <div class="card card-modern border-top-blue">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="card-title text-primary fw-bold">Tabel 1: Kerjasama</h3>
+                <p class="text-muted small mb-0">Data akan tersimpan otomatis saat Anda selesai mengetik.</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary shadow-sm" id="btn-tambah-baris">
+                <i class="fas fa-plus me-1"></i> Tambah Mitra
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="20%">Lembaga Mitra</th>
+                            <th width="15%">Tingkat</th>
+                            <th width="20%">Kegiatan</th>
+                            <th width="20%">Manfaat</th>
+                            <th width="10%">Durasi</th>
+                            <th width="10%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-dinamis">
+                        {% if data %}
+                            {% for item in data %}
+                            <tr>
+                                <td class="baris-nomor">{{ forloop.counter }}</td>
+                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="lembaga_mitra[]" value="{{ item.lembaga_mitra }}"></td>
+                                <td>
+                                    <select class="form-select form-select-sm auto-save-input" name="tingkat_kerjasama[]">
+                                        <option value="Internasional" {% if item.tingkat == 'Internasional' %}selected{% endif %}>Internasional</option>
+                                        <option value="Nasional" {% if item.tingkat == 'Nasional' %}selected{% endif %}>Nasional</option>
+                                        <option value="Wilayah/Lokal" {% if item.tingkat == 'Wilayah/Lokal' %}selected{% endif %}>Wilayah/Lokal</option>
+                                    </select>
+                                </td>
+                                <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kegiatan[]" rows="2">{{ item.judul_kegiatan }}</textarea></td>
+                                <td><textarea class="form-control form-control-sm auto-save-input" name="manfaat[]" rows="2">{{ item.manfaat }}</textarea></td>
+                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="durasi[]" value="{{ item.durasi }}"></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris"><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td class="baris-nomor">1</td>
+                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="lembaga_mitra[]" placeholder="Contoh: PT Telkom"></td>
+                                <td>
+                                    <select class="form-select form-select-sm auto-save-input" name="tingkat_kerjasama[]">
+                                        <option value="Internasional">Internasional</option>
+                                        <option value="Nasional">Nasional</option>
+                                        <option value="Wilayah/Lokal">Wilayah/Lokal</option>
+                                    </select>
+                                </td>
+                                <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kegiatan[]" rows="2" placeholder="Judul kerjasama..."></textarea></td>
+                                <td><textarea class="form-control form-control-sm auto-save-input" name="manfaat[]" rows="2" placeholder="Manfaat bagi prodi..."></textarea></td>
+                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="durasi[]" placeholder="2024-2025"></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" disabled><i class="fas fa-trash"></i></button></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('tbody-dinamis');
+        const btnTambah = document.getElementById('btn-tambah-baris');
+
+        // 1. Fungsi merapikan nomor urut
+        function updateNomor() {
+            const baris = tbody.querySelectorAll('tr');
+            baris.forEach((tr, index) => {
+                tr.querySelector('.baris-nomor').textContent = index + 1;
+                const btnHapus = tr.querySelector('.btn-hapus-baris');
+                // Tombol hapus hanya aktif jika baris lebih dari satu
+                if (baris.length > 1) { 
+                    btnHapus.removeAttribute('disabled'); 
+                } else { 
+                    btnHapus.setAttribute('disabled', 'true'); 
+                }
+            });
+        }
+
+        // 2. Fungsi tambah baris baru (Clone)
+        btnTambah.addEventListener('click', function() {
+            const firstRow = tbody.querySelector('tr');
+            const newRow = firstRow.cloneNode(true);
+            
+            // Kosongkan semua input/textarea di baris baru
+            const inputs = newRow.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+
+            tbody.appendChild(newRow);
+            updateNomor();
+            
+            // Trigger autosave agar baris baru diketahui backend (opsional)
+            console.log("Baris baru ditambahkan.");
+        });
+
+        // 3. Fungsi hapus baris (Delegation)
+        tbody.addEventListener('click', function(e) {
+            const btnHapus = e.target.closest('.btn-hapus-baris');
+            if (btnHapus && !btnHapus.hasAttribute('disabled')) {
+                btnHapus.closest('tr').remove();
+                updateNomor();
+                
+                // Trigger event input manual agar autosave jalan setelah baris dihapus
+                const event = new Event('input', { bubbles: true });
+                tbody.dispatchEvent(event);
+            }
+        });
+    });
+</script>
+{% endblock %}
