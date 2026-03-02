@@ -1,91 +1,96 @@
-{% extends 'lkps_app/base.html' %}
+{% extends 'core/base.html' %}
+{% block content %}
+<form id="form-tabel-9" method="POST">
+    {% csrf_token %}
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">Tabel 9: Luaran dan Capaian Tridharma</h5>
+            <button type="button" class="btn btn-primary btn-sm rounded-pill" id="btn-tambah-9">
+                <i class="fas fa-plus me-1"></i> Tambah Luaran
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle text-center mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="40%">Judul Luaran</th>
+                            <th width="20%">Jenis Luaran</th>
+                            <th width="15%">Tahun</th>
+                            <th width="15%">Keterangan</th>
+                            <th width="5%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-9">
+                        <tr>
+                            <td class="no">1</td>
+                            <td><input type="text" name="judul[]" class="form-control form-control-sm border-0 bg-light" placeholder="Judul Penelitian/HAKI"></td>
+                            <td>
+                                <select name="jenis[]" class="form-select form-select-sm border-0 bg-light">
+                                    <option value="Paten">Paten</option>
+                                    <option value="Hak Cipta">Hak Cipta</option>
+                                    <option value="Teknologi Tepat Guna">TTG</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="tahun[]" class="form-control form-control-sm border-0 bg-light" value="2026"></td>
+                            <td><input type="text" name="ket[]" class="form-control form-control-sm border-0 bg-light"></td>
+                            <td><button type="button" class="btn btn-link text-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white text-end">
+            <small id="sync-status" class="text-success"><i class="fas fa-check-circle"></i> Autosave Aktif</small>
+        </div>
+    </div>
+</form>
 
-{% load static %} {% block content %}
-<div class="card card-modern border-top-blue">
-    <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-            <div class="icon-box icon-box-blue">
-                <i class="fas fa-book-reader"></i>
-            </div>
-            <div>
-                <h3 class="card-title">Tabel 9: Luaran & Publikasi Ilmiah</h3>
-                <small class="text-muted">Daftar publikasi artikel jurnal atau karya ilmiah dalam 3 tahun terakhir.</small>
-            </div>
-        </div>
-        <a href="{% static 'lkps_app/excel_templates/template_tabel_9.xlsx' %}" download="Template_Tabel_9.xlsx" class="btn btn-sm btn-outline-success">
-    <i class="fas fa-download me-1"></i> Unduh Template
-</a>
-        <button class="btn btn-sm btn-primary" style="background-color: var(--pradita-blue); border: none;" id="btn-tambah-baris">
-            <i class="fas fa-plus me-1"></i> Tambah Publikasi
-        </button>
-    </div>
-    
-    <div class="card-body p-0">
-        <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
-            <table class="table table-bordered table-hover align-middle mb-0 text-center" style="min-width: 1300px;">
-                <thead class="table-light sticky-top">
-                    <tr>
-                        <th width="5%">No</th>
-                        <th width="20%">Nama Penulis (Dosen/Mhs)</th>
-                        <th width="25%">Judul Artikel / Karya Ilmiah</th>
-                        <th width="20%">Nama Jurnal / Seminar</th>
-                        <th width="10%">Kategori (Int/Nas)</th>
-                        <th width="10%">Tahun</th>
-                        <th width="10%">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-dinamis">
-                    <tr>
-                        <td class="baris-nomor">1</td>
-                        <td><textarea class="form-control form-control-sm auto-save-input" name="nama_penulis[]" rows="2" placeholder="Sebutkan semua penulis"></textarea></td>
-                        <td><textarea class="form-control form-control-sm auto-save-input" name="judul_artikel[]" rows="2" placeholder="Judul karya ilmiah"></textarea></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_jurnal[]" placeholder="Contoh: IEEE Access"></td>
-                        <td>
-                            <select class="form-select form-select-sm auto-save-input" name="kategori_jurnal[]">
-                                <option value="Internasional Bereputasi">Int. Bereputasi</option>
-                                <option value="Nasional Terakreditasi">Nas. Terakreditasi</option>
-                                <option value="Nasional">Nasional</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="tahun_publikasi[]" placeholder="2025"></td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" disabled><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+
 
 <script>
-    // Copy-paste script Javascript yang sama seperti tabel di atas.
     document.addEventListener('DOMContentLoaded', function() {
-        const tbody = document.getElementById('tbody-dinamis');
-        const btnTambah = document.getElementById('btn-tambah-baris');
-        function updateNomor() { /*...*/ 
-            const baris = tbody.querySelectorAll('tr');
-            baris.forEach((tr, index) => {
-                tr.querySelector('.baris-nomor').textContent = index + 1;
-                const btnHapus = tr.querySelector('.btn-hapus-baris');
-                if (baris.length > 1) { btnHapus.removeAttribute('disabled'); } 
-                else { btnHapus.setAttribute('disabled', 'true'); }
-            });
+        const tbody = document.getElementById('tbody-9');
+        const form = document.getElementById('form-tabel-9');
+        let timer;
+
+        function sync() {
+            document.getElementById('sync-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(res => res.json())
+                .then(() => {
+                    document.getElementById('sync-status').innerHTML = '<i class="fas fa-check-circle text-success"></i> Tersimpan';
+                });
+            }, 1000);
         }
-        btnTambah.addEventListener('click', function() {
-            const barisBaru = tbody.querySelector('tr').cloneNode(true);
-            const inputs = barisBaru.querySelectorAll('input[type="text"], input[type="number"], textarea');
-            inputs.forEach(input => input.value = '');
-            tbody.appendChild(barisBaru);
-            updateNomor();
+
+        form.addEventListener('input', sync);
+
+        document.getElementById('btn-tambah-9').addEventListener('click', () => {
+            const row = tbody.querySelector('tr').cloneNode(true);
+            row.querySelectorAll('input').forEach(i => i.value = '');
+            tbody.appendChild(row);
+            updateNo();
         });
-        tbody.addEventListener('click', function(e) {
-            const btnHapus = e.target.closest('.btn-hapus-baris');
-            if (btnHapus && !btnHapus.hasAttribute('disabled')) {
-                btnHapus.closest('tr').remove();
-                updateNomor();
+
+        tbody.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-hapus');
+            if (btn && tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                updateNo(); sync();
             }
         });
+
+        function updateNo() {
+            tbody.querySelectorAll('.no').forEach((td, i) => td.textContent = i + 1);
+        }
     });
 </script>
 {% endblock %}

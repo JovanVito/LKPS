@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     ProgramStudi, IdentitasPengusul, Tabel1Kerjasama, 
     SumberPendanaan, TenagaKependidikan, DataMahasiswa, 
-    PenelitianDTPR, PublikasiMahasiswa, DosenTetap, PenggunaanDana, Kurikulum, SistemTataKelola
+    PenelitianDTPR, PublikasiMahasiswa, DosenTetap, PenggunaanDana, Kurikulum, SistemTataKelola, Tabel_5_2
 )
 
 # --- KONFIGURASI ADMIN ---
@@ -43,3 +43,4 @@ admin.site.register(DosenTetap)
 admin.site.register(PenggunaanDana)
 admin.site.register(Kurikulum)
 admin.site.register(SistemTataKelola)
+admin.site.register(Tabel_5_2)

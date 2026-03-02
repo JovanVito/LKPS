@@ -5,10 +5,12 @@ from docxtpl import DocxTemplate
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.db import transaction
+from django.contrib.auth import authenticate, login
 from .models import (
     IdentitasPengusul, PenelitianDTPR, Tabel1Kerjasama, 
     DataMahasiswa, SumberPendanaan, TenagaKependidikan, 
-    PublikasiMahasiswa, DosenTetap, PenggunaanDana, Kurikulum, SistemTataKelola
+    PublikasiMahasiswa, DosenTetap, PenggunaanDana, Kurikulum, 
+    SistemTataKelola, Tabel_5_2
 )
 
 # --- HELPER: PEMBERSIH ANGKA ---
@@ -22,7 +24,24 @@ def to_clean_float(val):
         return float(s)
     except: return 0.0
 
-# --- 1. FITUR MASTER IMPORT EXCEL (TABEL 2, 3, 4) ---
+# --- 1. AUTHENTICATION & MASTER ---
+
+def login_view(request):
+    """Halaman Login (Root)"""
+    if request.method == 'POST':
+        # Logika login sederhana untuk pengembangan
+        return redirect('dashboard')
+    return render(request, 'core/login.html')
+
+def program_studi(request):
+    """Halaman Master Program Studi"""
+    # Mengambil data prodi (jika ada modelnya) atau menampilkan statis
+    return render(request, 'core/program_studi.html')
+
+def dashboard(request): 
+    return render(request, 'core/dashboard.html')
+
+# --- 2. FITUR MASTER IMPORT EXCEL ---
 
 def import_excel_lkps(request):
     """Master Import: Mendukung mapping kolom untuk Tabel 2, 3, dan 4"""
@@ -54,7 +73,6 @@ def import_excel_lkps(request):
                     logs.append("Tabel 2a")
 
                 # --- PROSES TABEL 3A (DOSEN TETAP) ---
-                # Menggunakan field 'nidk' sesuai permintaan
                 s3a = next((s for s in sheet_names if '3a' in s.lower() or 'dosen' in s.lower()), None)
                 if s3a:
                     df3 = pd.read_excel(xls, s3a)
@@ -63,7 +81,7 @@ def import_excel_lkps(request):
                     for _, row in df3.iterrows():
                         DosenTetap.objects.create(
                             nama_dosen=str(row.get('Nama Dosen', '')),
-                            nidk=str(row.get('NIDN / NIDK', row.get('NIDK', ''))), # Mapping ke nidk
+                            nidk=str(row.get('NIDN / NIDK', row.get('NIDK', ''))),
                             magister=str(row.get('Magister', '')),
                             doktor=str(row.get('Doktor', '')),
                             bidang_keahlian=str(row.get('Bidang Keahlian', '')),
@@ -92,10 +110,31 @@ def import_excel_lkps(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
-# --- 2. LOGIKA VIEW TABEL & AUTOSAVE (CRUD MANUAL) ---
+# --- 3. LOGIKA VIEW TABEL & AUTOSAVE ---
+
+def identitas_pengusul(request):
+    """View Identitas: Sinkronisasi Identitas Prodi & Institusi"""
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        with transaction.atomic():
+            IdentitasPengusul.objects.update_or_create(
+                id=1,
+                defaults={
+                    'perguruan_tinggi': request.POST.get('perguruan_tinggi'),
+                    'unit_pengelola': request.POST.get('unit_pengelola'),
+                    'program_studi': request.POST.get('program_studi'),
+                    'jenis_program': request.POST.get('jenis_program'),
+                    'alamat': request.POST.get('alamat'),
+                    'telepon': request.POST.get('telepon'),
+                    'email': request.POST.get('email'),
+                    'website': request.POST.get('website'),
+                    'kota_pendirian': request.POST.get('kota_pendirian'),
+                }
+            )
+        return JsonResponse({'status': 'success'})
+    identitas = IdentitasPengusul.objects.first()
+    return render(request, 'core/sampul.html', {'identitas': identitas})
 
 def tabel_2a(request):
-    """View Tabel 2a: Sinkronisasi 8 Kolom Mahasiswa"""
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         tahun = request.POST.getlist('tahun_akademik[]')
         daya = request.POST.getlist('daya_tampung[]')
@@ -125,10 +164,9 @@ def tabel_2a(request):
     return render(request, 'core/tabel_2a.html', {'data': data})
 
 def tabel_3a(request):
-    """View Tabel 3a: Mendukung Autosave & Tombol Delete (Menggunakan 'nidk')"""
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         nama = request.POST.getlist('nama_dosen[]')
-        nidk_list = request.POST.getlist('nidk[]') # Mengambil list nidk
+        nidk_list = request.POST.getlist('nidk[]')
         magister = request.POST.getlist('magister[]')
         doktor = request.POST.getlist('doktor[]')
         bidang = request.POST.getlist('bidang_keahlian[]')
@@ -137,31 +175,25 @@ def tabel_3a(request):
         matkul = request.POST.getlist('matkul_diampu[]')
 
         with transaction.atomic():
-            DosenTetap.objects.all().delete() # Hapus semua agar sinkron dengan layar (Fitur Delete)
+            DosenTetap.objects.all().delete()
             for i in range(len(nama)):
                 if nama[i].strip():
                     DosenTetap.objects.create(
-                        nama_dosen=nama[i],
-                        nidk=nidk_list[i], # Menggunakan field 'nidk'
-                        magister=magister[i],
-                        doktor=doktor[i],
-                        bidang_keahlian=bidang[i],
-                        jabatan_akademik=jabatan[i],
-                        sertifikat_pendidik=sertifikat[i],
-                        matkul_diampu=matkul[i]
+                        nama_dosen=nama[i], nidk=nidk_list[i],
+                        magister=magister[i], doktor=doktor[i],
+                        bidang_keahlian=bidang[i], jabatan_akademik=jabatan[i],
+                        sertifikat_pendidik=sertifikat[i], matkul_diampu=matkul[i]
                     )
         return JsonResponse({'status': 'success'})
     data = DosenTetap.objects.all().order_by('id')
     return render(request, 'core/tabel_3a.html', {'data': data})
 
-# --- 2. VIEW TABEL 4 (SINKRONISASI MANUAL & TAMPILAN) ---
 def tabel_4(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         jenis = request.POST.getlist('jenis_penggunaan[]')
         ts2 = request.POST.getlist('ts_2[]')
         ts1 = request.POST.getlist('ts_1[]')
         ts = request.POST.getlist('ts[]')
-        
         with transaction.atomic():
             PenggunaanDana.objects.all().delete()
             for i in range(len(jenis)):
@@ -173,105 +205,63 @@ def tabel_4(request):
                         ts=to_clean_float(ts[i])
                     )
         return JsonResponse({'status': 'success'})
-
     data = PenggunaanDana.objects.all().order_by('id')
-    # Default label supaya tabel tidak kosong saat pertama kali dibuka
-    default_labels = [
-        "Biaya Operasional Pendidikan", 
-        "Biaya Penelitian", 
-        "Biaya Pengabdian kepada Masyarakat (PkM)", 
-        "Biaya Investasi"
-    ]
+    default_labels = ["Biaya Operasional Pendidikan", "Biaya Penelitian", "Biaya PkM", "Biaya Investasi"]
     return render(request, 'core/tabel_4.html', {'data': data, 'default_labels': default_labels})
 
-#--- Tabel 5_1 ---#
 def tabel_5_1(request):
-    """View untuk menampilkan dan menyimpan data Tabel 5.1 secara otomatis."""
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Mengambil data list dari form
-        jenis_list = request.POST.getlist('jenis_tata_kelola[]')
         nama_list = request.POST.getlist('nama_sistem[]')
+        jenis_list = request.POST.getlist('jenis_tata_kelola[]')
         akses_list = request.POST.getlist('akses[]')
         unit_list = request.POST.getlist('unit_pengelola[]')
 
         with transaction.atomic():
-            # Sinkronisasi penuh: Hapus data lama dan simpan baris yang baru
             SistemTataKelola.objects.all().delete()
             for i in range(len(nama_list)):
-                # Hanya simpan jika nama sistem diisi (menghindari baris kosong)
                 if nama_list[i].strip():
                     SistemTataKelola.objects.create(
-                        jenis_tata_kelola=jenis_list[i],
-                        nama_sistem=nama_list[i],
-                        akses=akses_list[i],
-                        unit_pengelola=unit_list[i]
+                        jenis_tata_kelola=jenis_list[i], nama_sistem=nama_list[i],
+                        akses=akses_list[i], unit_pengelola=unit_list[i]
                     )
         return JsonResponse({'status': 'success'})
-
-    # Ambil data yang tersimpan untuk ditampilkan kembali di tabel
     data = SistemTataKelola.objects.all().order_by('id')
     return render(request, 'core/tabel_5_1.html', {'data': data})
 
-# --- 3. VIEW IDENTITAS (PASTIKAN TETAP ADA) ---
-def identitas_pengusul(request):
+def tabel_5_2(request):
+    """View Tabel 5.2: Sarana dan Prasarana menggunakan model Tabel_5_2"""
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        IdentitasPengusul.objects.update_or_create(
-            id=1,
-            defaults={
-                'perguruan_tinggi': request.POST.get('perguruan_tinggi'),
-                'unit_pengelola': request.POST.get('unit_pengelola'),
-                'program_studi': request.POST.get('program_studi'),
-                'email': request.POST.get('email'),
-                'telepon': request.POST.get('telepon'),
-                'website': request.POST.get('website'),
-                'kota_pendirian': request.POST.get('kota_pendirian'),
-            }
-        )
-        return JsonResponse({'status': 'success'})
-    return render(request, 'core/sampul.html', {'identitas': IdentitasPengusul.objects.first()})
-    # Ambil data dari DB
-    data = PenggunaanDana.objects.all().order_by('id')
-    
-    # Label default jika database masih kosong
-    default_labels = [
-        "Biaya Operasional Pendidikan",
-        "Biaya Penelitian",
-        "Biaya Pengabdian kepada Masyarakat (PkM)",
-        "Biaya Investasi (SDM, Sarpras, dsb)"
-    ]
-    
-    return render(request, 'core/tabel_4.html', {
-        'data': data, 
-        'default_labels': default_labels
-    })
+        jenis_sarana_prasarana = request.POST.getlist('jenis_sarana_prasarana[]')
+        jumlah_unit = request.POST.getlist('jumlah_unit[]')
+        total_luas_m2 = request.POST.getlist('total_luas_m2[]')
+        kepemilikan = request.POST.getlist('kepemilikan[]')
+        kondisi = request.POST.getlist('kondisi[]')
+        unit_pengelola = request.POST.getlist('unit_pengelola[]')
+        link = request.POST.getlist('link_bukti[]')
 
-# --- 3. DASHBOARD, WORD EXPORT, & PLACEHOLDERS ---
-
-def dashboard(request): return render(request, 'core/dashboard.html')
-def tabel_1(request): return render(request, 'core/tabel_1.html', {'data': Tabel1Kerjasama.objects.all()})
-def identitas_pengusul(request):
-    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         with transaction.atomic():
-            IdentitasPengusul.objects.update_or_create(
-                id=1,
-                defaults={
-                    'perguruan_tinggi': request.POST.get('perguruan_tinggi'),
-                    'unit_pengelola': request.POST.get('unit_pengelola'),
-                    'program_studi': request.POST.get('program_studi'), # Sekarang sinkron
-                    'jenis_program': request.POST.get('jenis_program'),
-                    'alamat': request.POST.get('alamat'),
-                    'telepon': request.POST.get('telepon'), # Nama sudah sama
-                    'email': request.POST.get('email'),     # Sudah dipisah
-                    'website': request.POST.get('website'), # Sudah dipisah
-                    'kota_pendirian': request.POST.get('kota_pendirian'),
-                }
-            )
+            # Hapus data lama di model Tabel_5_2
+            Tabel_5_2.objects.all().delete()
+            for i in range(len(jenis_sarana_prasarana)):
+                if jenis_sarana_prasarana[i].strip():
+                    Tabel_5_2.objects.create(
+                        jenis_sarana_prasarana=jenis_sarana_prasarana[i],
+                        jumlah_unit=int(jumlah_unit[i] or 0),
+                        total_luas_m2=to_clean_float(total_luas_m2[i]),
+                        kepemilikan=kepemilikan[i],
+                        kondisi=kondisi[i],
+                        unit_pengelola=unit_pengelola[i],
+                        link_bukti=link[i]
+                                            )
         return JsonResponse({'status': 'success'})
-    
-    identitas = IdentitasPengusul.objects.first()
-    return render(request, 'core/sampul.html', {'identitas': identitas})
+
+    data = Tabel_5_2.objects.all().order_by('id')
+    return render(request, 'core/tabel_5_2.html', {'data': data})
+
+# --- 4. EXPORT & MISC ---
+
 def generate_word_lkps(request):
-    """Export Word terintegrasi untuk semua data terbaru di PostgreSQL"""
+    """Export Word terintegrasi"""
     path_template = os.path.join('core', 'static', 'core', 'templates_word', 'template_lkps.docx')
     if not os.path.exists(path_template): return HttpResponse("Template tidak ditemukan", status=404)
     doc = DocxTemplate(path_template)
@@ -288,11 +278,33 @@ def generate_word_lkps(request):
     response['Content-Disposition'] = 'attachment; filename=LKPS_Universitas_Pradita.docx'
     return response
 
-# Placeholders (Agar navigasi tidak Error 404/AttributeError)
+# Placeholders & Navigasi
 def tim_penyusun(request): return render(request, 'core/tim_penyusun.html')
 def input_penelitian(request): return render(request, 'core/input_penelitian.html', {'data': PenelitianDTPR.objects.all()})
-def tabel_5_2(request): return render(request, 'core/tabel_5_2.html')
+def tabel_1(request): return render(request, 'core/tabel_1.html', {'data': Tabel1Kerjasama.objects.all()})
+
 def tabel_6(request): return render(request, 'core/tabel_6.html')
 def tabel_7(request): return render(request, 'core/tabel_7.html')
 def tabel_8(request): return render(request, 'core/tabel_8.html')
 def tabel_9(request): return render(request, 'core/tabel_9.html')
+def tabel_kepuasan(request):
+    """View Tabel Kepuasan: Sinkronisasi data kepuasan lulusan"""
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # (Logika POST/Simpan kamu tetap di sini)
+        pass
+
+    # Definisikan daftar aspek di sini agar tidak perlu menggunakan filter 'split' di HTML
+    aspek_list = [
+        "Etika", 
+        "Keahlian Bidang", 
+        "Bahasa Inggris", 
+        "Penggunaan Teknologi Informasi", 
+        "Komunikasi", 
+        "Kerjasama", 
+        "Pengembangan Diri"
+    ]
+
+    # Ambil data dari database jika sudah ada modelnya, jika belum kirim list saja
+    return render(request, 'core/tabel_kepuasan.html', {
+        'aspek_list': aspek_list
+    })

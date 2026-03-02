@@ -10,10 +10,6 @@ class ProgramStudi(models.Model):
 
 from django.db import models
 
-class ProgramStudi(models.Model): # Jika kamu masih pakai tabel ini
-    nama = models.CharField(max_length=100)
-    def __str__(self): return self.nama
-
 class IdentitasPengusul(models.Model):
     perguruan_tinggi = models.CharField(max_length=200, default="Universitas Pradita")
     unit_pengelola = models.CharField(max_length=200, blank=True, null=True)
@@ -187,11 +183,30 @@ class SistemTataKelola(models.Model):
         ('Internet', 'Internet'),
         ('Lokal', 'Lokal'),
     ]
-
-    jenis_tata_kelola = models.CharField(max_length=100, choices=JENIS_CHOICES)
+    jenis_sistem = models.CharField(max_length=100, choices=JENIS_CHOICES)
     nama_sistem = models.CharField(max_length=255)
     akses = models.CharField(max_length=50, choices=AKSES_CHOICES)
     unit_pengelola = models.CharField(max_length=255)
+    link_bukti = models.URLField(blank=True, null=True)
+    
+class Tabel_5_2(models.Model):
+    KEPEMILIKAN_CHOICES = [
+        ('Milik Sendiri', 'Milik Sendiri'),
+        ('Sewa', 'Sewa'),
+        ('Kerjasama', 'Kerjasama'),
+    ]
+    
+    KONDISI_CHOICES = [
+        ('Terawat', 'Terawat'),
+        ('Tidak Terawat', 'Tidak Terawat'),
+    ]
+
+    jenis_sarana_prasarana = models.CharField(max_length=255)
+    jumlah_unit = models.IntegerField(default=0)
+    total_luas_m2 = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    kepemilikan = models.CharField(max_length=100, choices=KEPEMILIKAN_CHOICES, default='Milik Sendiri')
+    kondisi = models.CharField(max_length=100, choices=KONDISI_CHOICES, default='Terawat')
+    unit_pengelola = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.nama_sistem} ({self.jenis_tata_kelola})"
+        return f"{self.jenis_sarana_prasarana} - {self.unit_pengelola}"

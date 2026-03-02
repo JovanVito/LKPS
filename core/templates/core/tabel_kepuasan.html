@@ -1,98 +1,87 @@
-{% extends 'lkps_app/base.html' %}
-
-{% load static %} {% block content %}
-<div class="card card-modern border-top-orange">
-    <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center">
-            <div class="icon-box icon-box-orange">
-                <i class="fas fa-briefcase"></i>
-            </div>
-            <div>
-                <h3 class="card-title">Tabel Kepuasan Pengguna Lulusan</h3>
-                <small class="text-muted">Data penilaian dari perusahaan/tempat kerja alumni berdasarkan kategori (Sangat Baik, Baik, Cukup, Kurang).</small>
-            </div>
+{% extends 'core/base.html' %}
+{% block content %}
+<form id="form-kepuasan" method="POST">
+    {% csrf_token %}
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">Tabel Kepuasan Pengguna Lulusan</h5>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% static 'lkps_app/excel_templates/template_kepuasan.xlsx' %}" download="Template_Kepuasan_Lulusan.xlsx" class="btn btn-sm btn-outline-success">
-    <i class="fas fa-download me-1"></i> Unduh Template
-</a>
-            <button class="btn btn-sm btn-outline-success"><i class="fas fa-download me-1"></i> Template Excel</button>
-            <button class="btn btn-sm btn-primary" style="background-color: var(--pradita-orange); border: none;" id="btn-tambah-baris">
-                <i class="fas fa-plus me-1"></i> Tambah Penilaian
-            </button>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle text-center mb-0">
+                    <thead class="table-primary text-white">
+                        <tr>
+                            <th rowspan="2" width="5%">No</th>
+                            <th rowspan="2" width="35%">Aspek yang Diukur</th>
+                            <th colspan="4">Tingkat Kepuasan (%)</th>
+                        </tr>
+                        <tr>
+                            <th width="15%">Sangat Baik</th>
+                            <th width="15%">Baik</th>
+                            <th width="15%">Cukup</th>
+                            <th width="15%">Kurang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for aspek in aspek_list %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="text-start">{{ aspek }}</td>
+                            <td><input type="number" name="sb[]" class="form-control form-control-sm" value="0" min="0" max="100"></td>
+                            <td><input type="number" name="b[]" class="form-control form-control-sm" value="0" min="0" max="100"></td>
+                            <td><input type="number" name="c[]" class="form-control form-control-sm" value="0" min="0" max="100"></td>
+                            <td><input type="number" name="k[]" class="form-control form-control-sm" value="0" min="0" max="100"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <div class="card-body p-0">
-        <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
-            <table class="table table-bordered table-hover align-middle mb-0 text-center" style="min-width: 1000px;">
-                <thead class="table-light sticky-top">
-                    <tr>
-                        <th width="5%">No</th>
-                        <th width="15%">Waktu (Tahun)</th>
-                        <th width="20%">Nama Perusahaan</th>
-                        <th width="20%">Nama Alumni</th>
-                        <th width="20%">Kategori Penilaian</th>
-                        <th width="10%">Nilai (0-100)</th>
-                        <th width="10%">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-dinamis">
-                    <tr>
-                        <td class="baris-nomor">1</td>
-                        <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="waktu[]" placeholder="Contoh: 2025"></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_perusahaan[]" placeholder="PT Contoh Maju"></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_alumni[]" placeholder="Budi Santoso"></td>
-                        <td>
-                            <select class="form-select form-select-sm auto-save-input" name="kategori_penilaian[]">
-                                <option value="Etika">Etika</option>
-                                <option value="Keahlian pada Bidang Ilmu">Keahlian pada Bidang Ilmu</option>
-                                <option value="Kemampuan Bahasa Asing">Kemampuan Bahasa Asing</option>
-                                <option value="Penggunaan Teknologi Informasi">Penggunaan Teknologi Informasi</option>
-                                <option value="Kemampuan Berkomunikasi">Kemampuan Berkomunikasi</option>
-                                <option value="Kerjasama Tim">Kerjasama Tim</option>
-                                <option value="Pengembangan Diri">Pengembangan Diri</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="form-control form-control-sm text-center auto-save-input text-primary fw-bold" name="nilai[]" min="0" max="100" placeholder="90"></td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" disabled><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+</form>
 
 <script>
-    // Script Dinamis (Sama dengan tabel sebelumnya)
     document.addEventListener('DOMContentLoaded', function() {
-        const tbody = document.getElementById('tbody-dinamis');
-        const btnTambah = document.getElementById('btn-tambah-baris');
-        function updateNomor() {
-            const baris = tbody.querySelectorAll('tr');
-            baris.forEach((tr, index) => {
-                tr.querySelector('.baris-nomor').textContent = index + 1;
-                const btnHapus = tr.querySelector('.btn-hapus-baris');
-                if (baris.length > 1) { btnHapus.removeAttribute('disabled'); } 
-                else { btnHapus.setAttribute('disabled', 'true'); }
-            });
+        const tbody = document.getElementById('tbody-9');
+        const form = document.getElementById('form-tabel-9');
+        let timer;
+
+        function sync() {
+            document.getElementById('sync-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(res => res.json())
+                .then(() => {
+                    document.getElementById('sync-status').innerHTML = '<i class="fas fa-check-circle text-success"></i> Tersimpan';
+                });
+            }, 1000);
         }
-        btnTambah.addEventListener('click', function() {
-            const barisBaru = tbody.querySelector('tr').cloneNode(true);
-            const inputs = barisBaru.querySelectorAll('input[type="text"], input[type="number"]');
-            inputs.forEach(input => input.value = '');
-            tbody.appendChild(barisBaru);
-            updateNomor();
+
+        form.addEventListener('input', sync);
+
+        document.getElementById('btn-tambah-9').addEventListener('click', () => {
+            const row = tbody.querySelector('tr').cloneNode(true);
+            row.querySelectorAll('input').forEach(i => i.value = '');
+            tbody.appendChild(row);
+            updateNo();
         });
-        tbody.addEventListener('click', function(e) {
-            const btnHapus = e.target.closest('.btn-hapus-baris');
-            if (btnHapus && !btnHapus.hasAttribute('disabled')) {
-                btnHapus.closest('tr').remove();
-                updateNomor();
+
+        tbody.addEventListener('click', e => {
+            const btn = e.target.closest('.btn-hapus');
+            if (btn && tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                updateNo(); sync();
             }
         });
+
+        function updateNo() {
+            tbody.querySelectorAll('.no').forEach((td, i) => td.textContent = i + 1);
+        }
     });
 </script>
 {% endblock %}

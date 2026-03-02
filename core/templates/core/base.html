@@ -15,7 +15,6 @@
 
 <div class="wrapper">
     <aside class="sidebar">
-        
         <div class="sidebar-header">
             <div class="sidebar-brand">
                 <i class="fas fa-layer-group me-2" style="color: var(--accent-color);"></i>
@@ -28,7 +27,6 @@
                     <i class="fas fa-home"></i> Dashboard Utama
                 </a>
             </li>
-            
 
             <li class="sidebar-item mb-2">
                 <a href="{% url 'identitas' %}" class="sidebar-link">
@@ -36,6 +34,12 @@
                 </a>
             </li>
             
+            <li class="sidebar-item mb-2">
+                <a href="{% url 'program_studi' %}" class="sidebar-link">
+                    <i class="fas fa-university"></i> Program Studi
+                </a>
+            </li>
+
             <li class="sidebar-item mb-2">
                 <a href="{% url 'tim_penyusun' %}" class="sidebar-link">
                     <i class="fas fa-users-cog"></i> Tim Penyusun LKPS
@@ -50,7 +54,6 @@
                 <ul class="collapse sidebar-submenu" id="kriteria13">
                     <li class="sidebar-item"><a href="{% url 'tabel_1' %}" class="sidebar-link">Tabel 1: Kerjasama</a></li>
                     <li class="sidebar-item"><a href="{% url 'tabel_2a' %}" class="sidebar-link">Tabel 2.A: Seleksi Mahasiswa</a></li>
-                    
                     <li class="sidebar-item"><a href="{% url 'tabel_3a' %}" class="sidebar-link">Tabel 3.A: Dosen Tetap</a></li>
                 </ul>
             </li>
@@ -77,6 +80,7 @@
                     <li class="sidebar-item"><a href="{% url 'tabel_7' %}" class="sidebar-link">Tabel 7: Penelitian</a></li>
                     <li class="sidebar-item"><a href="{% url 'tabel_8' %}" class="sidebar-link">Tabel 8: Pengabdian (PkM)</a></li>
                     <li class="sidebar-item"><a href="{% url 'tabel_9' %}" class="sidebar-link">Tabel 9: Luaran & Publikasi</a></li>
+                    <li class="sidebar-item"><a href="{% url 'tabel_kepuasan' %}" class="sidebar-link">Kepuasan Mahasiswa</a></li>
                 </ul>
             </li>
         </ul>
@@ -96,7 +100,7 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Pengaturan</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'login' %}"><i class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
                     </ul>
                 </div>
             </div>
