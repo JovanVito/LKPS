@@ -27,29 +27,39 @@
                     </tr>
                 </thead>
                 <tbody id="tabel-prodi">
+                    {% for prodi in daftar_prodi %}
                     <tr>
-                        <td class="text-center fw-bold text-muted">1</td>
-                        <td class="fw-bold text-dark">Informatika</td>
-                        <td class="text-center"><span class="badge bg-primary rounded-pill px-3">S1</span></td>
-                        <td class="text-center"><span class="badge bg-success rounded-pill px-3">Baik Sekali</span></td>
-                        <td class="text-muted small">1234/SK/BAN-PT/Akred/S/I/2026</td>
+                        <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td class="fw-bold text-dark">{{ prodi.nama_prodi }}</td>
+                        <td class="text-center"><span class="badge bg-primary rounded-pill px-3">{{ prodi.jenjang_studi }}</span></td>
+                        
+                        <td class="text-center">
+                            {% if prodi.akreditasi == 'Unggul' %}
+                                <span class="badge bg-primary rounded-pill px-3">Unggul</span>
+                            {% elif prodi.akreditasi == 'Baik Sekali' %}
+                                <span class="badge bg-success rounded-pill px-3">Baik Sekali</span>
+                            {% elif prodi.akreditasi == 'Baik' %}
+                                <span class="badge bg-warning text-dark rounded-pill px-3">Baik</span>
+                            {% else %}
+                                <span class="badge bg-secondary rounded-pill px-3">{{ prodi.akreditasi }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-muted small">{{ prodi.no_sk }}</td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td class="text-center fw-bold text-muted">2</td>
-                        <td class="fw-bold text-dark">Sistem Informasi</td>
-                        <td class="text-center"><span class="badge bg-primary rounded-pill px-3">S1</span></td>
-                        <td class="text-center"><span class="badge bg-warning text-dark rounded-pill px-3">Baik</span></td>
-                        <td class="text-muted small">5678/SK/BAN-PT/Akred/S/II/2026</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="fas fa-folder-open fs-3 mb-3 d-block"></i>
+                            Belum ada data Program Studi. Silakan klik tombol "Tambah Prodi Baru".
                         </td>
                     </tr>
-                </tbody>
+                    {% endfor %}
+                    </tbody>
             </table>
         </div>
     </div>
@@ -123,63 +133,52 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if(formProdi) {
         formProdi.addEventListener('submit', function(e) {
-            e.preventDefault(); // Mencegah form melakukan refresh halaman bawaan
-            
-            // Mengambil nilai inputan
-            const nama = document.getElementById('inputNamaProdi').value;
-            const jenjang = document.getElementById('inputJenjang').value;
-            const akreditasi = document.getElementById('inputAkreditasi').value;
-            const sk = document.getElementById('inputSK').value;
+            e.preventDefault(); // Tetap tahan refresh halaman
             
             // 1. Ubah tombol jadi status Loading
             const originalBtnText = btnSimpan.innerHTML;
             btnSimpan.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
             btnSimpan.classList.add('disabled');
             
-            // 2. SIMULASI KIRIM KE BACKEND (Nanti Backend yang mengganti bagian fetch ini)
-            setTimeout(() => {
-                // Skenario Sukses: Mengembalikan tombol ke semula
+            // 2. Ambil semua data form, termasuk CSRF Token
+            const formData = new FormData(formProdi);
+            
+            // 3. KIRIM DATA NYATA KE DJANGO (VIEWS.PY)
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Kembalikan tombol ke semula
                 btnSimpan.innerHTML = originalBtnText;
                 btnSimpan.classList.remove('disabled');
                 
-                // Menutup Modal secara otomatis
-                var myModalEl = document.getElementById('modalTambahProdi');
-                var modal = bootstrap.Modal.getInstance(myModalEl);
-                modal.hide();
-                
-                // (Opsional) Langsung menambahkan baris baru ke tabel secara visual 
-                // agar terkesan instan sebelum di-refresh oleh database
-                const tbody = document.getElementById('tabel-prodi');
-                const rowCount = tbody.getElementsByTagName('tr').length + 1;
-                
-                // Menentukan warna badge akreditasi
-                let badgeColor = 'bg-success';
-                if(akreditasi === 'Unggul') badgeColor = 'bg-primary';
-                if(akreditasi === 'Baik') badgeColor = 'bg-warning text-dark';
-                if(akreditasi === 'Belum Terakreditasi') badgeColor = 'bg-secondary';
-
-                const newRow = `
-                    <tr class="table-success" style="transition: all 1s;">
-                        <td class="text-center fw-bold text-muted">${rowCount}</td>
-                        <td class="fw-bold text-dark">${nama}</td>
-                        <td class="text-center"><span class="badge bg-primary rounded-pill px-3">${jenjang}</span></td>
-                        <td class="text-center"><span class="badge ${badgeColor} rounded-pill px-3">${akreditasi}</span></td>
-                        <td class="text-muted small">${sk}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', newRow);
-                
-                // Reset form input
-                formProdi.reset();
-                
-                // Alert Sukses
-                alert(`Program Studi ${nama} berhasil ditambahkan!`);
-                
-            }, 1000); // Simulasi delay internet 1.5 detik
+                if(data.status === 'success') {
+                    // Tutup Modal
+                    var myModalEl = document.getElementById('modalTambahProdi');
+                    var modal = bootstrap.Modal.getInstance(myModalEl) || new bootstrap.Modal(myModalEl);
+                    modal.hide();
+                    
+                    // Reset form
+                    formProdi.reset();
+                    
+                    // Refresh halaman untuk melihat data terbaru dari database
+                    // (Atau kamu bisa pakai logika append HTML-mu yang tadi jika ingin tanpa refresh)
+                    window.location.reload(); 
+                } else {
+                    alert('Gagal menyimpan: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btnSimpan.innerHTML = originalBtnText;
+                btnSimpan.classList.remove('disabled');
+                alert('Terjadi kesalahan koneksi ke server.');
+            });
         });
     }
 });

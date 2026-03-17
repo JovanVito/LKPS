@@ -28,51 +28,58 @@
                     </tr>
                 </thead>
                 <tbody id="tabel-user">
+                    {% for pengguna in daftar_pengguna %}
                     <tr>
-                        <td class="text-center fw-bold text-muted">1</td>
+                        <td class="text-center fw-bold text-muted">{{ forloop.counter }}</td>
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="bg-light rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="fas fa-user-tie text-muted"></i>
+                                    {% if pengguna.role == 'Kaprodi' %}<i class="fas fa-user-tie text-primary"></i>
+                                    {% elif pengguna.role == 'Dosen' %}<i class="fas fa-chalkboard-teacher text-info"></i>
+                                    {% elif pengguna.role == 'Auditor' %}<i class="fas fa-search text-warning"></i>
+                                    {% elif pengguna.role == 'Super Admin' %}<i class="fas fa-user-shield text-danger"></i>
+                                    {% else %}<i class="fas fa-user text-muted"></i>{% endif %}
                                 </div>
                                 <div>
-                                    <div class="fw-bold text-dark">Dr. Budi Santoso</div>
-                                    <small class="text-muted">NIDN: 0412345678</small>
+                                    <div class="fw-bold text-dark">{{ pengguna.nama_lengkap }}</div>
+                                    <small class="text-muted">NIDN/NIK: {{ pengguna.nomor_induk|default:"-" }}</small>
                                 </div>
                             </div>
                         </td>
-                        <td class="text-muted">budi.santoso@pradita.ac.id</td>
-                        <td class="text-center"><span class="badge bg-primary rounded-pill px-3">Kaprodi</span></td>
-                        <td class="text-center fw-medium text-muted">Informatika</td>
-                        <td class="text-center"><span class="badge bg-success rounded-pill px-3">Aktif</span></td>
+                        <td class="text-muted">{{ pengguna.email }}</td>
+                        
+                        <td class="text-center">
+                            {% if pengguna.role == 'Kaprodi' %}<span class="badge bg-primary rounded-pill px-3">{{ pengguna.role }}</span>
+                            {% elif pengguna.role == 'Dosen' %}<span class="badge bg-info text-dark rounded-pill px-3">{{ pengguna.role }}</span>
+                            {% elif pengguna.role == 'Auditor' %}<span class="badge bg-warning text-dark rounded-pill px-3">{{ pengguna.role }}</span>
+                            {% elif pengguna.role == 'Super Admin' %}<span class="badge bg-danger rounded-pill px-3">{{ pengguna.role }}</span>
+                            {% else %}<span class="badge bg-secondary rounded-pill px-3">{{ pengguna.role }}</span>{% endif %}
+                        </td>
+                        
+                        <td class="text-center fw-medium text-muted">{{ pengguna.akses_prodi }}</td>
+                        
+                        <td class="text-center">
+                            {% if pengguna.is_active %}
+                                <span class="badge bg-success rounded-pill px-3">Aktif</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill px-3">Non-Aktif</span>
+                            {% endif %}
+                        </td>
+                        
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td class="text-center fw-bold text-muted">2</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="bg-light rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="fas fa-user-shield text-muted"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-bold text-dark">Admin SPMI</div>
-                                    <small class="text-muted">Sistem Penjaminan Mutu</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-muted">admin.spmi@pradita.ac.id</td>
-                        <td class="text-center"><span class="badge rounded-pill px-3" style="background-color: var(--lms-purple);">Auditor Mutu</span></td>
-                        <td class="text-center fw-medium text-muted">- Semua Prodi -</td>
-                        <td class="text-center"><span class="badge bg-success rounded-pill px-3">Aktif</span></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" title="Hapus"><i class="fas fa-trash"></i></button>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="fas fa-users fs-3 mb-3 d-block"></i>
+                            Belum ada pengguna yang terdaftar.
                         </td>
                     </tr>
-                </tbody>
+                    {% endfor %}
+                    </tbody>
             </table>
         </div>
     </div>
@@ -161,75 +168,56 @@ document.addEventListener('DOMContentLoaded', function() {
         formUser.addEventListener('submit', function(e) {
             e.preventDefault(); 
             
-            // Ambil data dari form
-            const nama = document.getElementById('inputNamaUser').value;
-            const nidn = document.getElementById('inputNIDN').value || '-';
-            const email = document.getElementById('inputEmail').value;
-            const role = document.getElementById('inputRole').value;
-            const prodi = document.getElementById('inputAksesProdi').value;
-            
-            // 1. Animasi Loading
+            // 1. Ubah tombol jadi status Loading
             const originalBtnText = btnSimpan.innerHTML;
             btnSimpan.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
             btnSimpan.classList.add('disabled');
             
-            // 2. Simulasi request ke server
-            setTimeout(() => {
-                // Skenario Sukses: Reset tombol
+            try {
+                // 2. Ambil token CSRF dan data form
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const formData = new FormData(formUser);
+                
+                // 3. Kirim ke views.py (Django) via AJAX
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset tombol jika server sudah membalas
+                    btnSimpan.innerHTML = originalBtnText;
+                    btnSimpan.classList.remove('disabled');
+                    
+                    if(data.status === 'success') {
+                        var myModalEl = document.getElementById('modalTambahUser');
+                        var modal = bootstrap.Modal.getInstance(myModalEl) || new bootstrap.Modal(myModalEl);
+                        modal.hide();
+                        
+                        formUser.reset();
+                        window.location.reload(); 
+                    } else {
+                        alert('Gagal membuat akun: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error Jaringan/Server:', error);
+                    btnSimpan.innerHTML = originalBtnText;
+                    btnSimpan.classList.remove('disabled');
+                    alert('Server menolak request (Error 500). Coba cek layar Terminal VS Code kamu!');
+                });
+                
+            } catch (err) {
+                // Ini akan menangkap "Silent Failure" kalau JavaScript-nya yang bermasalah
+                console.error('Error Script Internal:', err);
                 btnSimpan.innerHTML = originalBtnText;
                 btnSimpan.classList.remove('disabled');
-                
-                // Tutup Modal
-                var myModalEl = document.getElementById('modalTambahUser');
-                var modal = bootstrap.Modal.getInstance(myModalEl);
-                modal.hide();
-                
-                // Penentuan Warna Badge Berdasarkan Role
-                let badgeColor = 'bg-secondary';
-                let iconClass = 'fa-user';
-                
-                if(role === 'Kaprodi') { badgeColor = 'bg-primary'; iconClass = 'fa-user-tie'; }
-                else if(role === 'Dosen') { badgeColor = 'bg-info text-dark'; iconClass = 'fa-chalkboard-teacher'; }
-                else if(role === 'Auditor') { badgeColor = 'bg-warning text-dark'; iconClass = 'fa-search'; }
-                else if(role === 'Super Admin') { badgeColor = 'bg-danger'; iconClass = 'fa-user-shield'; }
-
-                // Tambah ke tabel secara instan (Feedback Visual)
-                const tbody = document.getElementById('tabel-user');
-                const rowCount = tbody.getElementsByTagName('tr').length + 1;
-                
-                const newRow = `
-                    <tr class="table-success" style="transition: all 1s;">
-                        <td class="text-center fw-bold text-muted">${rowCount}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="bg-light rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="fas ${iconClass} text-muted"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-bold text-dark">${nama}</div>
-                                    <small class="text-muted">NIDN/NIK: ${nidn}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-muted">${email}</td>
-                        <td class="text-center"><span class="badge ${badgeColor} rounded-pill px-3">${role}</span></td>
-                        <td class="text-center fw-medium text-muted">${prodi}</td>
-                        <td class="text-center"><span class="badge bg-success rounded-pill px-3">Aktif</span></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', newRow);
-                
-                // Reset form
-                formUser.reset();
-                
-                // Munculkan notifikasi sukses
-                alert(`Akun untuk ${nama} (${role}) berhasil dibuat! Sistem otomatis mengirimkan email verifikasi.`);
-                
-            }, 1500); 
+                alert('Ada kesalahan kode di browser. Tekan F12 lalu cek tab Console.');
+            }
         });
     }
 });

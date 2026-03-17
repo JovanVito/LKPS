@@ -2,168 +2,228 @@
 {% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold text-dark mb-0">Identitas Laporan LKPS</h2>
-        <p class="text-muted">Halaman Muka, Identitas Pengusul, dan Tim Penyusun</p>
+<form id="form-sampul" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Identitas Laporan LKPS</h2>
+            <p class="text-muted">Halaman Muka, Identitas Pengusul, dan Tim Penyusun</p>
+        </div>
+        <span id="save-status" class="badge bg-light text-muted fw-normal shadow-sm"
+            style="display:none; padding: 10px 15px;">
+            <i class="fas fa-sync-alt fa-spin me-1"></i> Menyimpan...
+        </span>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-lg-4 mb-4">
-        <div class="card card-modern h-100" style="border-top: 4px solid var(--pradita-navy);">
-            <div class="card-header card-header-modern">
-                <h5 class="card-title fw-bold m-0">Halaman Muka</h5>
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card card-modern h-100" style="border-top: 4px solid var(--pradita-navy);">
+                <div class="card-header card-header-modern">
+                    <h5 class="card-title fw-bold m-0">Halaman Muka</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div class="border rounded p-4 bg-light d-inline-block mb-3"
+                            style="width: 150px; height: 150px; border-style: dashed !important;">
+                            <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                            <br><small class="text-muted">Upload Logo PT</small>
+                        </div>
+                        <input class="form-control form-control-sm auto-save-input" type="file" name="logo_pt" id="logo_pt">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-start w-100">Nama Program Studi</label>
+                        <input type="text" class="form-control text-center fw-bold auto-save-input"
+                            name="sampul_nama_ps" value="{{ data.nama_ps_sampul|default:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-start w-100">Nama Perguruan
+                            Tinggi</label>
+                        <input type="text" class="form-control text-center fw-bold auto-save-input"
+                            name="sampul_nama_pt" placeholder="Contoh: UNIVERSITAS PRADITA">
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <label class="form-label small fw-bold text-muted text-start w-100">Kota</label>
+                            <input type="text" class="form-control text-center auto-save-input" name="sampul_kota"
+                                placeholder="Tangerang">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small fw-bold text-muted text-start w-100">Tahun</label>
+                            <input type="number" class="form-control text-center auto-save-input" name="sampul_tahun"
+                                value="2026">
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body text-center p-4">
-                <div class="mb-4">
-                    <div class="border rounded p-4 bg-light d-inline-block mb-3" style="width: 150px; height: 150px; border-style: dashed !important;">
-                        <i class="fas fa-image fa-3x text-muted mb-2"></i>
-                        <br><small class="text-muted">Upload Logo PT</small>
-                    </div>
-                    <input class="form-control form-control-sm auto-save-input" type="file" id="logo_pt">
+        </div>
+
+        <div class="col-lg-8 mb-4">
+            <div class="card card-modern h-100" style="border-top: 4px solid var(--pradita-orange);">
+                <div class="card-header card-header-modern">
+                    <h5 class="card-title fw-bold m-0">Identitas Pengusul</h5>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted text-start w-100">Nama Program Studi</label>
-                    <input type="text" class="form-control text-center fw-bold auto-save-input" name="sampul_nama_ps" placeholder="Contoh: S1 INFORMATIKA">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-bold text-muted text-start w-100">Nama Perguruan Tinggi</label>
-                    <input type="text" class="form-control text-center fw-bold auto-save-input" name="sampul_nama_pt" placeholder="Contoh: UNIVERSITAS PRADITA">
-                </div>
-                <div class="row">
-                    <div class="col-8">
-                        <label class="form-label small fw-bold text-muted text-start w-100">Kota</label>
-                        <input type="text" class="form-control text-center auto-save-input" name="sampul_kota" placeholder="Tangerang">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label small fw-bold text-muted text-start w-100">Tahun</label>
-                        <input type="number" class="form-control text-center auto-save-input" name="sampul_tahun" value="2026">
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Perguruan Tinggi</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_pt">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Unit Pengelola Program Studi</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_upps">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Jenis Program</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_jenis_program">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold text-muted">Nama Program Studi</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_nama_ps">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted">Alamat</label>
+                            <textarea class="form-control form-control-sm auto-save-input" name="pengusul_alamat"
+                                rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">Nomor Telepon</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_telepon">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">E-Mail dan Website</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_email_web">
+                        </div>
+
+                        <hr class="my-3 text-muted">
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Nomor SK Pendirian PT</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_sk_pt">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Tgl SK Pendirian PT</label>
+                            <input type="date" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_tgl_sk_pt">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Pejabat Penandatangan</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_pejabat_pt">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Nomor SK Pembukaan PS</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_sk_ps">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Tgl SK Pembukaan PS</label>
+                            <input type="date" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_tgl_sk_ps">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Pejabat Penandatangan</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_pejabat_ps">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Tahun Pertama Menerima Mhs</label>
+                            <input type="number" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_tahun_mhs">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Peringkat Akreditasi PS</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_peringkat">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Nomor SK BAN-PT</label>
+                            <input type="text" class="form-control form-control-sm auto-save-input"
+                                name="pengusul_sk_banpt">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-8 mb-4">
-        <div class="card card-modern h-100" style="border-top: 4px solid var(--pradita-orange);">
-            <div class="card-header card-header-modern">
-                <h5 class="card-title fw-bold m-0">Identitas Pengusul</h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">Perguruan Tinggi</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_pt">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">Unit Pengelola Program Studi</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_upps">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Jenis Program</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_jenis_program">
-                    </div>
-                    <div class="col-md-8">
-                        <label class="form-label small fw-bold text-muted">Nama Program Studi</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_nama_ps">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small fw-bold text-muted">Alamat</label>
-                        <textarea class="form-control form-control-sm auto-save-input" name="pengusul_alamat" rows="2"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">Nomor Telepon</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_telepon">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">E-Mail dan Website</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_email_web">
-                    </div>
-                    
-                    <hr class="my-3 text-muted">
-                    
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Nomor SK Pendirian PT</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_sk_pt">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Tgl SK Pendirian PT</label>
-                        <input type="date" class="form-control form-control-sm auto-save-input" name="pengusul_tgl_sk_pt">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Pejabat Penandatangan</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_pejabat_pt">
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Nomor SK Pembukaan PS</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_sk_ps">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Tgl SK Pembukaan PS</label>
-                        <input type="date" class="form-control form-control-sm auto-save-input" name="pengusul_tgl_sk_ps">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Pejabat Penandatangan</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_pejabat_ps">
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Tahun Pertama Menerima Mhs</label>
-                        <input type="number" class="form-control form-control-sm auto-save-input" name="pengusul_tahun_mhs">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Peringkat Akreditasi PS</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_peringkat">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted">Nomor SK BAN-PT</label>
-                        <input type="text" class="form-control form-control-sm auto-save-input" name="pengusul_sk_banpt">
-                    </div>
-                </div>
+    <div class="card card-modern mb-4" style="border-top: 4px solid var(--lms-teal);">
+        <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+            <h5 class="card-title fw-bold m-0">Identitas Tim Penyusun</h5>
+            <button class="btn btn-sm text-white" style="background-color: var(--lms-teal);" id="btn-tambah-penyusun"><i
+                    class="fas fa-plus me-1"></i>Tambah Anggota</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="25%" class="text-start">Nama</th>
+                            <th width="15%">NIDN</th>
+                            <th width="20%">Jabatan</th>
+                            <th width="15%">Tanggal Pengisian</th>
+                            <th width="15%">Upload Tanda Tangan</th>
+                            <th width="5%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-penyusun">
+                        {% if tim_penyusun %}
+                        {% for anggota in tim_penyusun %}
+                        <tr>
+                            <td class="baris-nomor fw-bold bg-light">{{ forloop.counter }}</td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input text-start"
+                                    name="penyusun_nama[]" value="{{ anggota.nama }}"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_nidn[]" value="{{ anggota.nidn }}"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_jabatan[]" value="{{ anggota.jabatan }}"></td>
+                            <td><input type="date" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_tanggal[]" value="{{ anggota.tanggal_pengisian|date:'Y-m-d' }}"></td>
+                            <td>
+                                {% if anggota.tanda_tangan %}
+                                <small class="text-success">Tersimpan</small>
+                                {% endif %}
+                                <input type="file" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_ttd[]">
+                            </td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i
+                                        class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td class="baris-nomor fw-bold bg-light">1</td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input text-start"
+                                    name="penyusun_nama[]"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_nidn[]"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_jabatan[]"></td>
+                            <td><input type="date" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_tanggal[]"></td>
+                            <td><input type="file" class="form-control form-control-sm auto-save-input"
+                                    name="penyusun_ttd[]"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i
+                                        class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
-
-<div class="card card-modern mb-4" style="border-top: 4px solid var(--lms-teal);">
-    <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-        <h5 class="card-title fw-bold m-0">Identitas Tim Penyusun</h5>
-        <button class="btn btn-sm text-white" style="background-color: var(--lms-teal);" id="btn-tambah-penyusun"><i class="fas fa-plus me-1"></i>Tambah Anggota</button>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th width="5%">No</th>
-                        <th width="25%" class="text-start">Nama</th>
-                        <th width="15%">NIDN</th>
-                        <th width="20%">Jabatan</th>
-                        <th width="15%">Tanggal Pengisian</th>
-                        <th width="15%">Upload Tanda Tangan</th>
-                        <th width="5%">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-penyusun">
-                    <tr>
-                        <td class="baris-nomor fw-bold bg-light">1</td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input text-start" name="penyusun_nama[]" placeholder="Nama Lengkap"></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="penyusun_nidn[]" placeholder="NIDN"></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="penyusun_jabatan[]" placeholder="Jabatan dlm Tim"></td>
-                        <td><input type="date" class="form-control form-control-sm auto-save-input" name="penyusun_tanggal[]"></td>
-                        <td><input type="file" class="form-control form-control-sm auto-save-input" name="penyusun_ttd[]"></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+</form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const tbody = document.getElementById('tbody-penyusun');
         const btnTambah = document.getElementById('btn-tambah-penyusun');
 
@@ -176,15 +236,58 @@
                 else btnHapus.setAttribute('disabled', 'true');
             });
         }
+        // Tambahkan fungsi ini di dalam <script> sampul.html kamu
+        function kirimDataOtomatis() {
+    const formElement = document.getElementById('form-sampul');
+    const statusLabel = document.getElementById('save-status');
+    
+    // Tampilkan indikator loading
+    statusLabel.style.display = 'inline-block';
+    statusLabel.innerHTML = '<i class="fas fa-sync-alt fa-spin me-1"></i> Menyimpan...';
+    statusLabel.className = 'badge bg-light text-muted fw-normal shadow-sm';
 
-        btnTambah.addEventListener('click', function() {
+    const formData = new FormData(formElement);
+
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            // Jangan tambahkan 'Content-Type' manual jika mengirim FormData berisi file!
+            // Browser akan mengaturnya otomatis sebagai multipart/form-data.
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            statusLabel.innerHTML = '<i class="fas fa-check-circle me-1"></i> Tersimpan otomatis';
+            statusLabel.className = 'badge bg-success-subtle text-success fw-normal shadow-sm';
+            
+            // Sembunyikan pesan setelah 3 detik
+            setTimeout(() => { statusLabel.style.display = 'none'; }, 3000);
+        }
+    })
+    .catch(error => {
+        statusLabel.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Gagal menyimpan';
+        statusLabel.className = 'badge bg-danger-subtle text-danger fw-normal shadow-sm';
+    });
+}
+
+        // Trigger saat input kehilangan fokus (blur) atau isi berubah (change)
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('auto-save-input')) {
+                kirimDataOtomatis();
+            }
+        });
+
+        btnTambah.addEventListener('click', function () {
             const newRow = tbody.querySelector('tr').cloneNode(true);
             newRow.querySelectorAll('input[type="text"], input[type="date"], input[type="file"]').forEach(i => i.value = '');
             tbody.appendChild(newRow);
             updateRows();
         });
 
-        tbody.addEventListener('click', function(e) {
+        tbody.addEventListener('click', function (e) {
             const btnHapus = e.target.closest('.btn-hapus');
             if (btnHapus && !btnHapus.hasAttribute('disabled')) {
                 btnHapus.closest('tr').remove();

@@ -92,37 +92,43 @@
                     <i class="fas fa-bullseye"></i> Kriteria 6: Misi
                 </a>
             </li>
+            <li class="sidebar-item mb-2">
+    <a href="{% url 'db_explorer' %}" class="sidebar-link text-warning">
+        <i class="fas fa-database"></i> Database Explorer
+    </a>
+</li>
         </ul>
     </aside>
 
     <div class="main-content">
-        <header class="topbar">
-            <div>
-                <h5 class="mb-0 text-dark fw-bold">Pengisian Dokumen LKPS</h5>
-                <small class="text-muted">Universitas Pradita</small>
+    <header class="topbar">
+        <div class="d-flex align-items-center">
+            <h4 class="m-0 fw-bold text-dark d-none d-md-block" style="letter-spacing: -0.5px;">Sistem LKPS</h4>
+        </div>
+        
+        <div class="d-flex align-items-center gap-4">
+            <div id="autosave-indicator" class="d-flex align-items-center text-muted" style="transition: all 0.3s; opacity: 0.7;">
+                <i class="fas fa-cloud text-secondary me-2" id="autosave-icon"></i>
+                <span class="small fw-medium" id="autosave-text">Semua perubahan tersimpan</span>
             </div>
-            <div class="d-flex align-items-center">
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle border-0 shadow-sm" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle text-primary me-2"></i> User Program Studi
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-    <li>
-        <a class="dropdown-item py-2" href="#" onclick="alert('Pengaturan segera hadir');">
-            <i class="fas fa-cog me-2 text-muted"></i> Pengaturan Akun
-        </a>
-    </li>
-    <li><hr class="dropdown-divider"></li>
-    
-    <li>
-        <a class="dropdown-item text-danger py-2 fw-bold" href="{% url 'logout' %}">
-            <i class="fas fa-sign-out-alt me-2"></i> Keluar
-        </a>
-    </li>
-</ul>
-                </div>
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                    <div class="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-2 shadow-sm" style="width: 40px; height: 40px;">
+                        <span class="fw-bold">AD</span>
+                    </div>
+                    <div class="d-none d-md-block text-dark">
+                        <div class="fw-bold lh-1">Admin Prodi</div>
+                        <small class="text-muted">Informatika</small>
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                    <li><a class="dropdown-item py-2" href="#" onclick="alert('Pengaturan segera hadir');"><i class="fas fa-cog me-2 text-muted"></i> Pengaturan Akun</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger py-2 fw-bold" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Keluar</a></li>
+                </ul>
             </div>
-        </header>
+        </div>
+    </header>
 
         <main class="content-wrapper">
             {% block content %}
@@ -131,6 +137,32 @@
     </div>
 </div>
 
+<button class="btn btn-primary rounded-circle shadow-lg" id="chatbot-btn" style="position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; z-index: 9999;">
+    <i class="fas fa-comments fs-3"></i>
+</button>
+
+<div class="card shadow-lg" id="chatbot-window" style="display: none; position: fixed; bottom: 100px; right: 30px; width: 350px; height: 450px; z-index: 9999; border-radius: 15px; overflow: hidden;">
+    <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: var(--pradita-navy, #001f3f);">
+        <h6 class="mb-0"><i class="fas fa-robot me-2"></i> Asisten Borang AI</h6>
+        <button type="button" class="btn-close btn-close-white" id="close-chatbot"></button>
+    </div>
+    <div class="card-body bg-light" id="chatbot-messages" style="overflow-y: auto; height: 320px; font-size: 0.9rem;">
+        <div class="d-flex justify-content-start mb-2">
+            <div class="bg-white p-2 rounded-3 shadow-sm border" style="max-width: 85%;">
+                Halo! Saya Asisten AI. Jika ada yang membingungkan seputar pengisian borang ini, tanyakan saja pada saya!
+            </div>
+        </div>
+    </div>
+    <div class="card-footer bg-white">
+        <form id="chatbot-form" class="d-flex gap-2">
+            {% csrf_token %}
+            <input type="text" id="chatbot-input" class="form-control form-control-sm" placeholder="Ketik pertanyaan..." autocomplete="off" required>
+            <button type="submit" class="btn btn-primary btn-sm" id="chatbot-send">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'lkps_app/js/autosave.js' %}"></script>
 
@@ -153,5 +185,133 @@
     <p class="text-white-50">Mohon tunggu, proses konversi ke Word sedang berjalan.</p>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ==========================================
+        // 1. LOGIKA INDIKATOR AUTOSAVE (Sudah ada)
+        // ==========================================
+        const autosaveIndicator = document.getElementById('autosave-indicator');
+        const autosaveIcon = document.getElementById('autosave-icon');
+        const autosaveText = document.getElementById('autosave-text');
+        
+        let typingTimer;                
+        const doneTypingInterval = 1000; 
+
+        function setStatusSaving() {
+            autosaveIcon.className = 'fas fa-sync-alt fa-spin text-primary me-2';
+            autosaveText.textContent = 'Menyimpan...';
+            autosaveText.className = 'small fw-bold text-primary';
+            autosaveIndicator.style.opacity = '1';
+        }
+
+        function setStatusSaved() {
+            autosaveIcon.className = 'fas fa-cloud-check text-success me-2';
+            autosaveText.textContent = 'Tersimpan ke cloud';
+            autosaveText.className = 'small fw-medium text-success';
+            setTimeout(() => {
+                autosaveIcon.className = 'fas fa-cloud text-secondary me-2';
+                autosaveText.textContent = 'Semua perubahan tersimpan';
+                autosaveText.className = 'small fw-medium text-muted';
+                autosaveIndicator.style.opacity = '0.7';
+            }, 2000);
+        }
+
+        function saveToServer(inputElement) {
+            setTimeout(() => { setStatusSaved(); }, 500);
+        }
+
+        document.body.addEventListener('input', function(e) {
+            if (e.target.classList.contains('auto-save-input')) {
+                clearTimeout(typingTimer);
+                setStatusSaving();
+                typingTimer = setTimeout(function() { saveToServer(e.target); }, doneTypingInterval);
+            }
+        });
+
+        document.body.addEventListener('change', function(e) {
+            if (e.target.classList.contains('auto-save-input') && 
+               (e.target.type === 'checkbox' || e.target.tagName === 'SELECT')) {
+                clearTimeout(typingTimer);
+                setStatusSaving();
+                saveToServer(e.target);
+            }
+        });
+
+        // ==========================================
+        // 2. LOGIKA CHATBOT AI (Baru)
+        // ==========================================
+        const chatBtn = document.getElementById('chatbot-btn');
+        const chatWindow = document.getElementById('chatbot-window');
+        const closeBtn = document.getElementById('close-chatbot');
+        const chatForm = document.getElementById('chatbot-form');
+        const chatInput = document.getElementById('chatbot-input');
+        const chatMessages = document.getElementById('chatbot-messages');
+        const csrfToken = document.querySelector('#chatbot-form [name=csrfmiddlewaretoken]').value;
+
+        chatBtn.addEventListener('click', () => chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none');
+        closeBtn.addEventListener('click', () => chatWindow.style.display = 'none');
+
+        function appendMessage(sender, text) {
+            const isUser = sender === 'user';
+            const align = isUser ? 'justify-content-end' : 'justify-content-start';
+            const bgColor = isUser ? 'bg-primary text-white' : 'bg-white border';
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `d-flex ${align} mb-2`;
+            // Gunakan innerHTML karena respons dari API Gemini terkadang punya baris baru (\n)
+            msgDiv.innerHTML = `<div class="${bgColor} p-2 rounded-3 shadow-sm" style="max-width: 85%; line-height: 1.4;">${text.replace(/\n/g, '<br>')}</div>`;
+            
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            appendMessage('user', message);
+            chatInput.value = '';
+            chatInput.disabled = true;
+
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'd-flex justify-content-start mb-2';
+            loadingDiv.innerHTML = `<div class="bg-white border p-2 rounded-3 shadow-sm" style="max-width: 85%;"><i class="fas fa-ellipsis-h fa-fade text-muted"></i></div>`;
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            const formData = new FormData();
+            formData.append('message', message);
+
+            fetch('/chatbot-api/', {
+                method: 'POST',
+                body: formData,
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById(loadingId).remove();
+                if(data.status === 'success') {
+                    appendMessage('bot', data.reply);
+                } else {
+                    appendMessage('bot', 'Maaf, terjadi kesalahan server: ' + data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById(loadingId).remove();
+                appendMessage('bot', 'Koneksi terputus. Periksa jaringan Anda.');
+            })
+            .finally(() => {
+                chatInput.disabled = false;
+                chatInput.focus();
+            });
+        });
+    });
+</script>
 </body>
 </html>

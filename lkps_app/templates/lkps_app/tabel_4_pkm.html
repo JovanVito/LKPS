@@ -1,357 +1,433 @@
 {% extends 'lkps_app/base.html' %}
-{% load static %}
+{% load static custom_filters %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold text-dark mb-0">Kriteria 4: Relevansi PkM</h2>
-        <p class="text-muted">Fasilitas, Pembiayaan, Kerjasama, dan Diseminasi Pengabdian kepada Masyarakat</p>
+<form id="form-kriteria-4">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Kriteria 4: Relevansi PkM</h2>
+            <p class="text-muted">Fasilitas, Pembiayaan, Kerjasama, dan Diseminasi Pengabdian kepada Masyarakat</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span id="save-status" class="badge bg-light text-muted fw-normal shadow-sm" style="display:none; padding: 8px 12px;">
+                <i class="fas fa-sync-alt fa-spin me-1"></i> Menyimpan...
+            </span>
+        </div>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{% static 'lkps_app/excel_templates/template_4_pkm.xlsx' %}" download="Template_4_PkM.xlsx" class="btn btn-outline-success shadow-sm">
-            <i class="fas fa-file-excel me-2"></i>Unduh Template Kriteria 4
-        </a>
-    </div>
-</div>
 
-<div class="card card-modern mb-4" style="border-top: 4px solid #0e6333;"> <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-        <h5 class="card-title fw-bold m-0">Tabel 4.A.1 Sarana dan Prasarana PkM</h5>
-        <button class="btn btn-sm text-white" style="background-color: #0e6333;" id="btn-tambah-4a1"><i class="fas fa-plus me-1"></i>Tambah Sarana</button>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
-            <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1200px;">
-                <thead class="table-light sticky-top">
-                    <tr>
-                        <th>Nama Prasarana</th>
-                        <th>Daya Tampung</th>
-                        <th>Luas Ruang (m2)</th>
-                        <th>Milik Sendiri (M) / Sewa (W)</th>
-                        <th>Berlisensi (L) / Public Domain (P) / Tidak Berlisensi (T)</th>
-                        <th>Perangkat</th>
-                        <th>Link Bukti</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-4a1">
-                    <tr>
-                        <td><input type="text" class="form-control form-control-sm text-start auto-save-input" name="nama_prasarana_pkm[]" placeholder="Contoh: Bengkel IoT"></td>
-                        <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="daya_tampung_pkm[]" value="0"></td>
-                        <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="luas_ruang_pkm[]" value="0"></td>
-                        <td>
-                            <select class="form-select form-select-sm auto-save-input" name="kepemilikan_pkm[]">
-                                <option value="M">Milik sendiri (M)</option>
-                                <option value="W">Sewa (W)</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select class="form-select form-select-sm auto-save-input" name="lisensi_pkm[]">
-                                <option value="L">Berlisensi (L)</option>
-                                <option value="P">Public Domain (P)</option>
-                                <option value="T">Tidak Berlisensi (T)</option>
-                            </select>
-                        </td>
-                        <td><textarea class="form-control form-control-sm auto-save-input" name="perangkat_pkm[]" rows="1" placeholder="Hardware/Software..."></textarea></td>
-                        <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_prasarana_pkm[]" placeholder="https://..."></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="card card-modern mb-4" style="border-top: 4px solid #0e6333;"> 
+        <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+            <h5 class="card-title fw-bold m-0">Tabel 4.A.1 Sarana dan Prasarana PkM</h5>
+            <button type="button" class="btn btn-sm text-white" style="background-color: #0e6333;" id="btn-tambah-4a1"><i class="fas fa-plus me-1"></i>Tambah Sarana</button>
         </div>
-    </div>
-</div>
-
-<div class="card card-modern mb-4" style="border-top: 4px solid #f26e21;"> <div class="card-header card-header-modern">
-        <h5 class="card-title fw-bold m-0 mb-3">Tabel 4.A.2 PkM DTPR, Hibah dan Pembiayaan PkM</h5>
-        <div class="d-flex align-items-center bg-light p-2 rounded">
-            <label class="fw-bold me-3 text-muted mb-0" style="white-space: nowrap;">Roadmap PkM:</label>
-            <input type="url" class="form-control form-control-sm auto-save-input" name="link_roadmap_pkm" placeholder="Tuliskan link ke dokumen roadmap Pengabdian kepada Masyarakat">
-        </div>
-    </div>
-    <div class="card-body p-0">
-        <div class="d-flex justify-content-end p-2 border-bottom">
-            <button class="btn btn-sm text-white" style="background-color: #f26e21;" id="btn-tambah-4a2"><i class="fas fa-plus me-1"></i>Tambah PkM</button>
-        </div>
-        <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
-            <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1500px;">
-                <thead class="table-light sticky-top">
-                    <tr>
-                        <th rowspan="2" class="align-middle">No</th>
-                        <th rowspan="2" class="align-middle">Nama DTPR (Sebagai Ketua PkM)</th>
-                        <th rowspan="2" class="align-middle">Judul PkM</th>
-                        <th rowspan="2" class="align-middle">Jumlah Mahasiswa yang Terlibat</th>
-                        <th rowspan="2" class="align-middle">Jenis Hibah PkM</th>
-                        <th rowspan="2" class="align-middle">Sumber Dana L/N/I</th>
-                        <th rowspan="2" class="align-middle">Durasi (tahun)</th>
-                        <th colspan="3" class="border-bottom">Pendanaan (Rp Juta)</th>
-                        <th rowspan="2" class="align-middle">Link Bukti</th>
-                        <th rowspan="2" class="align-middle">Aksi</th>
-                    </tr>
-                    <tr>
-                        <th>TS-2</th><th>TS-1</th><th>TS</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-4a2">
-                    <tr class="baris-pkm">
-                        <td class="baris-nomor">1</td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_pkm[]"></td>
-                        <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kegiatan_pkm[]" rows="1"></textarea></td>
-                        <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="jml_mhs_pkm[]" value="0"></td>
-                        <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hibah_pkm[]"></td>
-                        <td>
-                            <select class="form-select form-select-sm auto-save-input" name="sumber_dana_pkm[]">
-                                <option value="L">Lokal (L)</option><option value="N">Nasional (N)</option><option value="I">Internasional (I)</option>
-                            </select>
-                        </td>
-                        <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_pkm[]" value="1"></td>
-                        <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts2[]" value="0"></td>
-                        <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts1[]" value="0"></td>
-                        <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts[]" value="0"></td>
-                        <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_dana_pkm[]" placeholder="URL"></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-                <tfoot class="table-light fw-bold">
-                    <tr>
-                        <td colspan="7" class="text-end">Jumlah Dana</td>
-                        <td id="total-pkm-ts2">0.0</td><td id="total-pkm-ts1">0.0</td><td id="total-pkm-ts">0.0</td>
-                        <td colspan="2"></td>
-                    </tr>
-                    <tr>
-                        <td colspan="7" class="text-end text-primary">Jumlah PkM</td>
-                        <td colspan="5" class="text-start ps-4 text-primary" id="total-pkm">1</td>
-                    </tr>
-                    <tr>
-                        <td colspan="7" class="text-end text-success">Jumlah Jenis Hibah PKM</td>
-                        <td colspan="5" class="text-start ps-4 text-success"><input type="number" class="form-control form-control-sm d-inline-block w-25 text-center auto-save-input" name="total_jenis_hibah_pkm" value="0"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card card-modern" style="border-top: 4px solid #f9a121;"> <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold m-0">Tabel 4.C.1 Kerjasama PkM</h5>
-                <button class="btn btn-sm text-white" style="background-color: #f9a121;" id="btn-tambah-4c1"><i class="fas fa-plus me-1"></i>Tambah Kerjasama</button>
+        <div class="card-body p-0">
+            <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1200px;">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Nama Prasarana</th>
+                            <th>Daya Tampung</th>
+                            <th>Luas Ruang (m2)</th>
+                            <th>Milik Sendiri (M) / Sewa (W)</th>
+                            <th>Berlisensi (L) / Public Domain (P) / Tidak Berlisensi (T)</th>
+                            <th>Perangkat</th>
+                            <th>Link Bukti</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-4a1">
+                        {% for sr in data_4a1 %}
+                        <tr>
+                            <td><input type="text" class="form-control form-control-sm text-start auto-save-input" name="nama_prasarana_pkm[]" value="{{ sr.nama_prasarana }}"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="daya_tampung_pkm[]" value="{{ sr.daya_tampung }}"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="luas_ruang_pkm[]" value="{{ sr.luas_ruang|stringformat:'f' }}"></td>
+                            <td>
+                                <select class="form-select form-select-sm auto-save-input" name="kepemilikan_pkm[]">
+                                    <option value="M" {% if sr.kepemilikan == 'M' %}selected{% endif %}>Milik sendiri (M)</option>
+                                    <option value="W" {% if sr.kepemilikan == 'W' %}selected{% endif %}>Sewa (W)</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm auto-save-input" name="lisensi_pkm[]">
+                                    <option value="L" {% if sr.lisensi == 'L' %}selected{% endif %}>Berlisensi (L)</option>
+                                    <option value="P" {% if sr.lisensi == 'P' %}selected{% endif %}>Public Domain (P)</option>
+                                    <option value="T" {% if sr.lisensi == 'T' %}selected{% endif %}>Tidak Berlisensi (T)</option>
+                                </select>
+                            </td>
+                            <td><textarea class="form-control form-control-sm auto-save-input" name="perangkat_pkm[]" rows="1">{{ sr.perangkat|default:'' }}</textarea></td>
+                            <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_prasarana_pkm[]" value="{{ sr.link_bukti|default:'' }}"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td><input type="text" class="form-control form-control-sm text-start auto-save-input" name="nama_prasarana_pkm[]" placeholder="Contoh: Bengkel IoT"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="daya_tampung_pkm[]" value="0"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="luas_ruang_pkm[]" value="0"></td>
+                            <td><select class="form-select form-select-sm auto-save-input" name="kepemilikan_pkm[]"><option value="M">Milik sendiri (M)</option><option value="W">Sewa (W)</option></select></td>
+                            <td><select class="form-select form-select-sm auto-save-input" name="lisensi_pkm[]"><option value="L">Berlisensi (L)</option><option value="P">Public Domain (P)</option><option value="T">Tidak Berlisensi (T)</option></select></td>
+                            <td><textarea class="form-control form-control-sm auto-save-input" name="perangkat_pkm[]" rows="1" placeholder="Hardware/Software..."></textarea></td>
+                            <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_prasarana_pkm[]" placeholder="https://..."></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1000px;">
-                        <thead class="table-light">
-                            <tr>
-                                <th rowspan="2" class="align-middle">No</th>
-                                <th rowspan="2" class="align-middle">Judul Kerjasama</th>
-                                <th rowspan="2" class="align-middle">Mitra kerja sama</th>
-                                <th rowspan="2" class="align-middle">Sumber L/N/I</th>
-                                <th rowspan="2" class="align-middle">Durasi (tahun)</th>
-                                <th colspan="3" class="border-bottom">Pendanaan (Rp Juta)</th>
-                                <th rowspan="2" class="align-middle">Link Bukti</th>
-                                <th rowspan="2" class="align-middle">Aksi</th>
-                            </tr>
-                            <tr>
-                                <th>TS-2</th><th>TS-1</th><th>TS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-4c1">
-                            <tr class="baris-kerja-pkm">
-                                <td class="baris-nomor">1</td>
-                                <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kerjasama_pkm[]" rows="1"></textarea></td>
-                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="mitra_kerjasama_pkm[]"></td>
-                                <td>
-                                    <select class="form-select form-select-sm auto-save-input" name="sumber_kerja_pkm[]">
-                                        <option value="L">L</option><option value="N">N</option><option value="I">I</option>
-                                    </select>
-                                </td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_kerja_pkm[]" value="1"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts2[]" value="0"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts1[]" value="0"></td>
-                                <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts[]" value="0"></td>
-                                <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_kerja_pkm[]"></td>
-                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="5" class="text-end">Jumlah Dana</td>
-                                <td id="total-kpkm-ts2">0.0</td><td id="total-kpkm-ts1">0.0</td><td id="total-kpkm-ts">0.0</td>
-                                <td colspan="2"></td>
-                            </tr>
-                            <tr>
-                                <td colspan="5" class="text-end text-primary">Jumlah Kerjasama</td>
-                                <td colspan="5" class="text-start ps-4 text-primary" id="total-kerja-pkm">1</td>
-                            </tr>
-                        </tfoot>
-                    </table>
+        </div>
+    </div>
+
+    <div class="card card-modern mb-4" style="border-top: 4px solid #f26e21;"> 
+        <div class="card-header card-header-modern">
+            <h5 class="card-title fw-bold m-0 mb-3">Tabel 4.A.2 PkM DTPR, Hibah dan Pembiayaan PkM</h5>
+            <div class="d-flex align-items-center bg-light p-2 rounded">
+                <label class="fw-bold me-3 text-muted mb-0" style="white-space: nowrap;">Roadmap PkM:</label>
+                <input type="url" class="form-control form-control-sm auto-save-input" name="link_roadmap_pkm" value="{{ summary.link_roadmap|default:'' }}" placeholder="Link dokumen roadmap">
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="d-flex justify-content-end p-2 border-bottom">
+                <button type="button" class="btn btn-sm text-white" style="background-color: #f26e21;" id="btn-tambah-4a2"><i class="fas fa-plus me-1"></i>Tambah PkM</button>
+            </div>
+            <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1500px;">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th rowspan="2" class="align-middle">No</th>
+                            <th rowspan="2" class="align-middle">Nama DTPR (Ketua)</th>
+                            <th rowspan="2" class="align-middle">Judul PkM</th>
+                            <th rowspan="2" class="align-middle">Jumlah Mhs</th>
+                            <th rowspan="2" class="align-middle">Jenis Hibah</th>
+                            <th rowspan="2" class="align-middle">Sumber L/N/I</th>
+                            <th rowspan="2" class="align-middle">Durasi (thn)</th>
+                            <th colspan="3" class="border-bottom">Pendanaan (Rp Juta)</th>
+                            <th rowspan="2" class="align-middle">Link Bukti</th>
+                            <th rowspan="2" class="align-middle">Aksi</th>
+                        </tr>
+                        <tr>
+                            <th>TS-2</th><th>TS-1</th><th>TS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-4a2">
+                        {% for pk in data_4a2 %}
+                        <tr class="baris-pkm">
+                            <td class="baris-nomor">{{ forloop.counter }}</td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_pkm[]" value="{{ pk.nama_dtpr }}"></td>
+                            <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kegiatan_pkm[]" rows="1">{{ pk.judul }}</textarea></td>
+                            <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="jml_mhs_pkm[]" value="{{ pk.jml_mhs }}"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hibah_pkm[]" value="{{ pk.jenis_hibah }}"></td>
+                            <td>
+                                <select class="form-select form-select-sm auto-save-input" name="sumber_dana_pkm[]">
+                                    <option value="L" {% if pk.sumber_lni == 'L' %}selected{% endif %}>L</option>
+                                    <option value="N" {% if pk.sumber_lni == 'N' %}selected{% endif %}>N</option>
+                                    <option value="I" {% if pk.sumber_lni == 'I' %}selected{% endif %}>I</option>
+                                </select>
+                            </td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_pkm[]" value="{{ pk.durasi|stringformat:'f' }}"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts2[]" value="{{ pk.dana_ts2|stringformat:'f' }}"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts1[]" value="{{ pk.dana_ts1|stringformat:'f' }}"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts[]" value="{{ pk.dana_ts|stringformat:'f' }}"></td>
+                            <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_dana_pkm[]" value="{{ pk.link_bukti|default:'' }}"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% empty %}
+                        <tr class="baris-pkm">
+                            <td class="baris-nomor">1</td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_pkm[]"></td>
+                            <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kegiatan_pkm[]" rows="1"></textarea></td>
+                            <td><input type="number" class="form-control form-control-sm text-center auto-save-input" name="jml_mhs_pkm[]" value="0"></td>
+                            <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hibah_pkm[]"></td>
+                            <td><select class="form-select form-select-sm auto-save-input" name="sumber_dana_pkm[]"><option value="L">L</option><option value="N">N</option><option value="I">I</option></select></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_pkm[]" value="1"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts2[]" value="0"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts1[]" value="0"></td>
+                            <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-pkm auto-save-input" name="dana_pkm_ts[]" value="0"></td>
+                            <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_dana_pkm[]"></td>
+                            <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light fw-bold">
+                        <tr>
+                            <td colspan="7" class="text-end">Jumlah Dana</td>
+                            <td id="total-pkm-ts2">0.0</td><td id="total-pkm-ts1">0.0</td><td id="total-pkm-ts">0.0</td>
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="text-end text-primary">Jumlah PkM</td>
+                            <td colspan="5" class="text-start ps-4 text-primary" id="total-pkm">1</td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="text-end text-success">Jumlah Jenis Hibah PKM</td>
+                            <td colspan="5" class="text-start ps-4 text-success"><input type="number" class="form-control form-control-sm d-inline-block w-25 text-center auto-save-input" name="total_jenis_hibah_pkm" value="{{ summary.total_jenis_hibah }}"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card card-modern" style="border-top: 4px solid #f9a121;"> 
+                <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold m-0">Tabel 4.C.1 Kerjasama PkM</h5>
+                    <button type="button" class="btn btn-sm text-white" style="background-color: #f9a121;" id="btn-tambah-4c1"><i class="fas fa-plus me-1"></i>Tambah Kerjasama</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-center" style="min-width: 1000px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2" class="align-middle">No</th>
+                                    <th rowspan="2" class="align-middle">Judul Kerjasama</th>
+                                    <th rowspan="2" class="align-middle">Mitra kerja sama</th>
+                                    <th rowspan="2" class="align-middle">Sumber L/N/I</th>
+                                    <th rowspan="2" class="align-middle">Durasi (thn)</th>
+                                    <th colspan="3" class="border-bottom">Pendanaan (Rp Juta)</th>
+                                    <th rowspan="2" class="align-middle">Link Bukti</th>
+                                    <th rowspan="2" class="align-middle">Aksi</th>
+                                </tr>
+                                <tr><th>TS-2</th><th>TS-1</th><th>TS</th></tr>
+                            </thead>
+                            <tbody id="tbody-4c1">
+                                {% for kr in data_4c1 %}
+                                <tr class="baris-kerja-pkm">
+                                    <td class="baris-nomor">{{ forloop.counter }}</td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kerjasama_pkm[]" rows="1">{{ kr.judul }}</textarea></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="mitra_kerjasama_pkm[]" value="{{ kr.mitra }}"></td>
+                                    <td>
+                                        <select class="form-select form-select-sm auto-save-input" name="sumber_kerja_pkm[]">
+                                            <option value="L" {% if kr.sumber_lni == 'L' %}selected{% endif %}>L</option>
+                                            <option value="N" {% if kr.sumber_lni == 'N' %}selected{% endif %}>N</option>
+                                            <option value="I" {% if kr.sumber_lni == 'I' %}selected{% endif %}>I</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_kerja_pkm[]" value="{{ kr.durasi|stringformat:'f' }}"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts2[]" value="{{ kr.dana_ts2|stringformat:'f' }}"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts1[]" value="{{ kr.dana_ts1|stringformat:'f' }}"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts[]" value="{{ kr.dana_ts|stringformat:'f' }}"></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_kerja_pkm[]" value="{{ kr.link_bukti|default:'' }}"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% empty %}
+                                <tr class="baris-kerja-pkm">
+                                    <td class="baris-nomor">1</td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_kerjasama_pkm[]" rows="1"></textarea></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="mitra_kerjasama_pkm[]"></td>
+                                    <td><select class="form-select form-select-sm auto-save-input" name="sumber_kerja_pkm[]"><option value="L">L</option><option value="N">N</option><option value="I">I</option></select></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center auto-save-input" name="durasi_kerja_pkm[]" value="1"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts2[]" value="0"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts1[]" value="0"></td>
+                                    <td><input type="number" step="0.1" class="form-control form-control-sm text-center val-dana-kpkm auto-save-input" name="dana_kpkm_ts[]" value="0"></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_kerja_pkm[]"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="5" class="text-end">Jumlah Dana</td>
+                                    <td id="total-kpkm-ts2">0.0</td><td id="total-kpkm-ts1">0.0</td><td id="total-kpkm-ts">0.0</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end text-primary">Jumlah Kerjasama</td>
+                                    <td colspan="5" class="text-start ps-4 text-primary" id="total-kerja-pkm">1</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-lg-7 mb-4">
-        <div class="card card-modern h-100" style="border-top: 4px solid #ec1c24;"> <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold m-0">Tabel 4.C.2 Diseminasi Hasil PkM</h5>
-                <button class="btn btn-sm text-white" style="background-color: #ec1c24;" id="btn-tambah-4c2"><i class="fas fa-plus"></i></button>
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card card-modern h-100" style="border-top: 4px solid #ec1c24;"> 
+                <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold m-0">Tabel 4.C.2 Diseminasi Hasil PkM</h5>
+                    <button type="button" class="btn btn-sm text-white" style="background-color: #ec1c24;" id="btn-tambah-4c2"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2" class="align-middle">No</th>
+                                    <th rowspan="2" class="align-middle">Nama DTPR</th>
+                                    <th rowspan="2" class="align-middle">Judul</th>
+                                    <th rowspan="2" class="align-middle">Diseminasi (L/N/I)</th>
+                                    <th colspan="3" class="border-bottom">Tahun</th>
+                                    <th rowspan="2" class="align-middle">Link Bukti</th>
+                                    <th rowspan="2" class="align-middle">Aksi</th>
+                                </tr>
+                                <tr><th>TS-2</th><th>TS-1</th><th>TS</th></tr>
+                            </thead>
+                            <tbody id="tbody-4c2">
+                                {% for ds in data_4c2 %}
+                                <tr class="baris-diseminasi">
+                                    <td class="baris-nomor">{{ forloop.counter }}</td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_disem[]" value="{{ ds.nama_dtpr }}"></td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_disem[]" rows="1">{{ ds.judul }}</textarea></td>
+                                    <td>
+                                        <select class="form-select form-select-sm sel-lni-disem auto-save-input" name="lni_disem[]">
+                                            <option value="L" {% if ds.lni == 'L' %}selected{% endif %}>L</option>
+                                            <option value="N" {% if ds.lni == 'N' %}selected{% endif %}>N</option>
+                                            <option value="I" {% if ds.lni == 'I' %}selected{% endif %}>I</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="hidden" name="disem_ts2[]" value="{% if ds.ts2 %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if ds.ts2 %}checked{% endif %}></td>
+                                    <td><input type="hidden" name="disem_ts1[]" value="{% if ds.ts1 %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if ds.ts1 %}checked{% endif %}></td>
+                                    <td><input type="hidden" name="disem_ts[]" value="{% if ds.ts %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if ds.ts %}checked{% endif %}></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_disem[]" value="{{ ds.link_bukti|default:'' }}"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% empty %}
+                                <tr class="baris-diseminasi">
+                                    <td class="baris-nomor">1</td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_disem[]"></td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_disem[]" rows="1"></textarea></td>
+                                    <td><select class="form-select form-select-sm sel-lni-disem auto-save-input" name="lni_disem[]"><option value="L">L</option><option value="N">N</option><option value="I">I</option></select></td>
+                                    <td><input type="hidden" name="disem_ts2[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="hidden" name="disem_ts1[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="hidden" name="disem_ts[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_disem[]"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold text-start">
+                                <tr><td colspan="4" class="text-end">Jumlah Judul PkM</td><td colspan="5" class="ps-3" id="jml-judul-pkm">1</td></tr>
+                                <tr><td colspan="4" class="text-end">Jumlah Diseminasi Hasil PkM</td><td colspan="5" class="ps-3"><input type="number" class="form-control form-control-sm d-inline-block w-25 auto-save-input" name="jml_disem_hasil" value="{{ summary.jml_disem_hasil }}"></td></tr>
+                                <tr><td colspan="4" class="text-end text-success">Jumlah PkM Lokal</td><td colspan="5" class="ps-3 text-success" id="jml-lokal">1</td></tr>
+                                <tr><td colspan="4" class="text-end text-primary">Jumlah PkM Nasional</td><td colspan="5" class="ps-3 text-primary" id="jml-nasional">0</td></tr>
+                                <tr><td colspan="4" class="text-end text-danger">Jumlah PkM Internasional</td><td colspan="5" class="ps-3 text-danger" id="jml-internasional">0</td></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th rowspan="2" class="align-middle">No</th>
-                                <th rowspan="2" class="align-middle">Nama DTPR (Ketua)</th>
-                                <th rowspan="2" class="align-middle">Judul</th>
-                                <th rowspan="2" class="align-middle">Diseminasi (L/N/I)</th>
-                                <th colspan="3" class="border-bottom">Tahun (Beri Tanda &check;)</th>
-                                <th rowspan="2" class="align-middle">Link Bukti</th>
-                                <th rowspan="2" class="align-middle">Aksi</th>
-                            </tr>
-                            <tr>
-                                <th>TS-2</th><th>TS-1</th><th>TS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-4c2">
-                            <tr class="baris-diseminasi">
-                                <td class="baris-nomor">1</td>
-                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_disem[]"></td>
-                                <td><textarea class="form-control form-control-sm auto-save-input" name="judul_disem[]" rows="1"></textarea></td>
-                                <td>
-                                    <select class="form-select form-select-sm sel-lni-disem auto-save-input" name="lni_disem[]">
-                                        <option value="L">Lokal (L)</option>
-                                        <option value="N">Nasional (N)</option>
-                                        <option value="I">Internasional (I)</option>
-                                    </select>
-                                </td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="disem_ts2[]" value="1"></td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="disem_ts1[]" value="1"></td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="disem_ts[]" value="1"></td>
-                                <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_disem[]"></td>
-                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="table-light fw-bold text-start">
-                            <tr><td colspan="4" class="text-end">Jumlah Judul PkM</td><td colspan="5" class="ps-3" id="jml-judul-pkm">1</td></tr>
-                            <tr><td colspan="4" class="text-end">Jumlah Diseminasi Hasil PkM</td><td colspan="5" class="ps-3"><input type="number" class="form-control form-control-sm d-inline-block w-25" name="jml_disem_hasil" value="0"></td></tr>
-                            <tr><td colspan="4" class="text-end text-success">Jumlah PkM Lokal</td><td colspan="5" class="ps-3 text-success" id="jml-lokal">1</td></tr>
-                            <tr><td colspan="4" class="text-end text-primary">Jumlah PkM Nasional</td><td colspan="5" class="ps-3 text-primary" id="jml-nasional">0</td></tr>
-                            <tr><td colspan="4" class="text-end text-danger">Jumlah PkM Internasional</td><td colspan="5" class="ps-3 text-danger" id="jml-internasional">0</td></tr>
-                        </tfoot>
-                    </table>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="card card-modern h-100" style="border-top: 4px solid #f2d30f;"> 
+                <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold m-0">Tabel 4.C.3 Perolehan HKI PkM</h5>
+                    <button type="button" class="btn btn-sm text-dark" style="background-color: #f2d30f;" id="btn-tambah-4c3"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-center">
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2" class="align-middle">No</th>
+                                    <th rowspan="2" class="align-middle">Judul</th>
+                                    <th rowspan="2" class="align-middle">Jenis HKI</th>
+                                    <th rowspan="2" class="align-middle">Nama DTPR</th>
+                                    <th colspan="3" class="border-bottom">Tahun</th>
+                                    <th rowspan="2" class="align-middle">Link Bukti</th>
+                                    <th rowspan="2" class="align-middle">Aksi</th>
+                                </tr>
+                                <tr><th>TS-2</th><th>TS-1</th><th>TS</th></tr>
+                            </thead>
+                            <tbody id="tbody-4c3">
+                                {% for hk in data_4c3 %}
+                                <tr class="baris-hki-pkm">
+                                    <td class="baris-nomor">{{ forloop.counter }}</td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_hki_pkm[]" rows="1">{{ hk.judul }}</textarea></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hki_pkm[]" value="{{ hk.jenis_hki }}"></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_hki_pkm[]" value="{{ hk.nama_dtpr }}"></td>
+                                    <td><input type="hidden" name="hkipkm_ts2[]" value="{% if hk.ts2 %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if hk.ts2 %}checked{% endif %}></td>
+                                    <td><input type="hidden" name="hkipkm_ts1[]" value="{% if hk.ts1 %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if hk.ts1 %}checked{% endif %}></td>
+                                    <td><input type="hidden" name="hkipkm_ts[]" value="{% if hk.ts %}1{% else %}0{% endif %}"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'" {% if hk.ts %}checked{% endif %}></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_hki_pkm[]" value="{{ hk.link_bukti|default:'' }}"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% empty %}
+                                <tr class="baris-hki-pkm">
+                                    <td class="baris-nomor">1</td>
+                                    <td><textarea class="form-control form-control-sm auto-save-input" name="judul_hki_pkm[]" rows="1"></textarea></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hki_pkm[]"></td>
+                                    <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_hki_pkm[]"></td>
+                                    <td><input type="hidden" name="hkipkm_ts2[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="hidden" name="hkipkm_ts1[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="hidden" name="hkipkm_ts[]" value="0"><input class="form-check-input auto-save-input" type="checkbox" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'"></td>
+                                    <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_hki_pkm[]"></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus" disabled><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="4" class="text-end text-primary">Jumlah HKI</td>
+                                    <td colspan="5" class="text-start ps-3 text-primary" id="total-hki-pkm">1</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="col-lg-5 mb-4">
-        <div class="card card-modern h-100" style="border-top: 4px solid #f2d30f;"> <div class="card-header card-header-modern d-flex justify-content-between align-items-center">
-                <h5 class="card-title fw-bold m-0">Tabel 4.C.3 Perolehan HKI PkM</h5>
-                <button class="btn btn-sm text-dark" style="background-color: #f2d30f;" id="btn-tambah-4c3"><i class="fas fa-plus"></i></button>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th rowspan="2" class="align-middle">No</th>
-                                <th rowspan="2" class="align-middle">Judul</th>
-                                <th rowspan="2" class="align-middle">Jenis HKI</th>
-                                <th rowspan="2" class="align-middle">Nama DTPR</th>
-                                <th colspan="3" class="border-bottom">Tahun (Beri Tanda &check;)</th>
-                                <th rowspan="2" class="align-middle">Link Bukti</th>
-                                <th rowspan="2" class="align-middle">Aksi</th>
-                            </tr>
-                            <tr>
-                                <th>TS-2</th><th>TS-1</th><th>TS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-4c3">
-                            <tr class="baris-hki-pkm">
-                                <td class="baris-nomor">1</td>
-                                <td><textarea class="form-control form-control-sm auto-save-input" name="judul_hki_pkm[]" rows="1"></textarea></td>
-                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="jenis_hki_pkm[]"></td>
-                                <td><input type="text" class="form-control form-control-sm auto-save-input" name="nama_dtpr_hki_pkm[]"></td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="hkipkm_ts2[]" value="1"></td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="hkipkm_ts1[]" value="1"></td>
-                                <td><input class="form-check-input auto-save-input" type="checkbox" name="hkipkm_ts[]" value="1"></td>
-                                <td><input type="url" class="form-control form-control-sm auto-save-input" name="link_bukti_hki_pkm[]"></td>
-                                <td><button type="button" class="btn btn-sm btn-outline-danger btn-hapus"><i class="fas fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                        <tfoot class="table-light fw-bold">
-                            <tr>
-                                <td colspan="4" class="text-end text-primary">Jumlah HKI</td>
-                                <td colspan="5" class="text-start ps-3 text-primary" id="total-hki-pkm">1</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+</form>
 
 <script>
-    function setupDynamicTable(tbodyId, btnAddId, rowClass, countId) {
-        const tbody = document.getElementById(tbodyId);
-        const btnAdd = document.getElementById(btnAddId);
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusLabel = document.getElementById('save-status');
+        let saveTimeout = null;
+        let isSaving = false;
+        let adaPerubahanTertunda = false;
 
-        function updateRows() {
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach((tr, index) => {
-                const numCell = tr.querySelector('.baris-nomor');
-                if(numCell) numCell.textContent = index + 1;
-                const btnHapus = tr.querySelector('.btn-hapus');
-                if (rows.length > 1) btnHapus.removeAttribute('disabled');
-                else btnHapus.setAttribute('disabled', 'true');
+        function setupDynamicTable(tbodyId, btnAddId, rowClass, countId) {
+            const tbody = document.getElementById(tbodyId);
+            const btnAdd = document.getElementById(btnAddId);
+
+            function updateRows() {
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((tr, index) => {
+                    const numCell = tr.querySelector('.baris-nomor');
+                    if(numCell) numCell.textContent = index + 1;
+                    const btnHapus = tr.querySelector('.btn-hapus');
+                    if (rows.length > 1) btnHapus.removeAttribute('disabled');
+                    else btnHapus.setAttribute('disabled', 'true');
+                });
+                if(countId) document.getElementById(countId).textContent = rows.length;
+            }
+
+            btnAdd.addEventListener('click', function() {
+                const newRow = tbody.querySelector('tr').cloneNode(true);
+                newRow.querySelectorAll('input[type="text"], input[type="url"], textarea').forEach(i => i.value = '');
+                newRow.querySelectorAll('input[type="number"]').forEach(i => { if(!i.name.includes('durasi')) i.value = '0'; else i.value = '1'; });
+                
+                // Reset checkbox dan hidden input
+                newRow.querySelectorAll('input[type="checkbox"]').forEach(i => {
+                    i.checked = false;
+                    if(i.previousElementSibling && i.previousElementSibling.type === 'hidden') {
+                        i.previousElementSibling.value = '0';
+                    }
+                });
+
+                tbody.appendChild(newRow);
+                updateRows();
+                if(tbodyId === 'tbody-4c2') hitungLNI();
+                kirimDataOtomatis();
             });
-            if(countId) document.getElementById(countId).textContent = rows.length;
+
+            tbody.addEventListener('click', function(e) {
+                const btnHapus = e.target.closest('.btn-hapus');
+                if (btnHapus && !btnHapus.hasAttribute('disabled')) {
+                    btnHapus.closest('tr').remove();
+                    updateRows();
+                    if(tbodyId === 'tbody-4c2') hitungLNI();
+                    kirimDataOtomatis();
+                }
+            });
+            updateRows();
         }
 
-        btnAdd.addEventListener('click', function() {
-            const newRow = tbody.querySelector('tr').cloneNode(true);
-            newRow.querySelectorAll('input[type="text"], input[type="url"], textarea').forEach(i => i.value = '');
-            newRow.querySelectorAll('input[type="number"]').forEach(i => { if(!i.name.includes('durasi')) i.value = '0'; else i.value = '1'; });
-            newRow.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
-            tbody.appendChild(newRow);
-            updateRows();
-            if(tbodyId === 'tbody-4c2') hitungLNI(); // Update LNI counts for Diseminasi
-        });
-
-        tbody.addEventListener('click', function(e) {
-            const btnHapus = e.target.closest('.btn-hapus');
-            if (btnHapus && !btnHapus.hasAttribute('disabled')) {
-                btnHapus.closest('tr').remove();
-                updateRows();
-                if(tbodyId === 'tbody-4c2') hitungLNI(); // Update LNI counts for Diseminasi
-            }
-        });
-    }
-
-    // Fungsi khusus untuk menghitung L/N/I di Tabel Diseminasi
-    function hitungLNI() {
-        let lokal = 0, nasional = 0, internasional = 0;
-        document.querySelectorAll('.sel-lni-disem').forEach(select => {
-            if(select.value === 'L') lokal++;
-            if(select.value === 'N') nasional++;
-            if(select.value === 'I') internasional++;
-        });
-        document.getElementById('jml-lokal').textContent = lokal;
-        document.getElementById('jml-nasional').textContent = nasional;
-        document.getElementById('jml-internasional').textContent = internasional;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        setupDynamicTable('tbody-4a1', 'btn-tambah-4a1', '');
-        setupDynamicTable('tbody-4a2', 'btn-tambah-4a2', 'baris-pkm', 'total-pkm');
-        setupDynamicTable('tbody-4c1', 'btn-tambah-4c1', 'baris-kerja-pkm', 'total-kerja-pkm');
-        setupDynamicTable('tbody-4c2', 'btn-tambah-4c2', 'baris-diseminasi', 'jml-judul-pkm');
-        setupDynamicTable('tbody-4c3', 'btn-tambah-4c3', 'baris-hki-pkm', 'total-hki-pkm');
-        
-        // Logika Kalkulasi Dana
+        // Kalkulasi Dana dan LNI
         function hitungDana(rowClass, valClass, resultIds) {
             let sums = [0, 0, 0];
             document.querySelectorAll(`.${rowClass}`).forEach(row => {
@@ -365,11 +441,88 @@
             });
         }
 
+        function hitungLNI() {
+            let lokal = 0, nasional = 0, internasional = 0;
+            document.querySelectorAll('.sel-lni-disem').forEach(select => {
+                if(select.value === 'L') lokal++;
+                if(select.value === 'N') nasional++;
+                if(select.value === 'I') internasional++;
+            });
+            document.getElementById('jml-lokal').textContent = lokal;
+            document.getElementById('jml-nasional').textContent = nasional;
+            document.getElementById('jml-internasional').textContent = internasional;
+        }
+
+        function runAllCalculations() {
+            hitungDana('baris-pkm', 'val-dana-pkm', ['total-pkm-ts2', 'total-pkm-ts1', 'total-pkm-ts']);
+            hitungDana('baris-kerja-pkm', 'val-dana-kpkm', ['total-kpkm-ts2', 'total-kpkm-ts1', 'total-kpkm-ts']);
+            hitungLNI();
+        }
+
+        // Autosave Logic (Menggunakan WAL Mode timeout friendly)
+        function kirimDataOtomatis() {
+            if (isSaving) {
+                adaPerubahanTertunda = true;
+                return;
+            }
+            isSaving = true;
+            const formData = new FormData(document.getElementById('form-kriteria-4'));
+            
+            statusLabel.style.display = 'inline-block';
+            statusLabel.innerHTML = '<i class="fas fa-sync-alt fa-spin me-1"></i> Menyimpan...';
+            statusLabel.className = 'badge bg-light text-muted fw-normal shadow-sm me-2';
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    statusLabel.innerHTML = '<i class="fas fa-check-circle me-1"></i> Tersimpan';
+                    statusLabel.className = 'badge bg-success-subtle text-success fw-normal shadow-sm me-2';
+                    setTimeout(() => { statusLabel.style.display = 'none'; }, 2000);
+                }
+            })
+            .catch(error => console.error("Error Autosave:", error))
+            .finally(() => {
+                isSaving = false;
+                if (adaPerubahanTertunda) {
+                    adaPerubahanTertunda = false;
+                    kirimDataOtomatis();
+                }
+            });
+        }
+
+        // Setup
+        setupDynamicTable('tbody-4a1', 'btn-tambah-4a1', '', null);
+        setupDynamicTable('tbody-4a2', 'btn-tambah-4a2', 'baris-pkm', 'total-pkm');
+        setupDynamicTable('tbody-4c1', 'btn-tambah-4c1', 'baris-kerja-pkm', 'total-kerja-pkm');
+        setupDynamicTable('tbody-4c2', 'btn-tambah-4c2', 'baris-diseminasi', 'jml-judul-pkm');
+        setupDynamicTable('tbody-4c3', 'btn-tambah-4c3', 'baris-hki-pkm', 'total-hki-pkm');
+        
+        runAllCalculations();
+
+        // Listeners JS Calculations
         document.getElementById('tbody-4a2').addEventListener('input', () => hitungDana('baris-pkm', 'val-dana-pkm', ['total-pkm-ts2', 'total-pkm-ts1', 'total-pkm-ts']));
         document.getElementById('tbody-4c1').addEventListener('input', () => hitungDana('baris-kerja-pkm', 'val-dana-kpkm', ['total-kpkm-ts2', 'total-kpkm-ts1', 'total-kpkm-ts']));
-        
-        // Event listener khusus untuk perubahan dropdown L/N/I
         document.getElementById('tbody-4c2').addEventListener('change', hitungLNI);
+
+        // Listener Autosave
+        document.addEventListener('input', function (e) {
+            if (e.target.classList.contains('auto-save-input')) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(kirimDataOtomatis, 2000); 
+            }
+        });
+
+        document.addEventListener('change', function (e) {
+            if (e.target.type === 'checkbox' && e.target.classList.contains('auto-save-input')) {
+                clearTimeout(saveTimeout);
+                kirimDataOtomatis(); 
+            }
+        });
     });
 </script>
 {% endblock %}

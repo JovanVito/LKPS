@@ -2,8 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    #Export ke Docx
+    path('export-word/', views.export_lkps_word, name='export_word'),
+
     # Auth & Master
-    path('', views.login, name='login'),
+    path('', views.login_view, name='login'),
     path('logout/', views.halaman_logout, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('sampul/', views.sampul, name='sampul'),
